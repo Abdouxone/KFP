@@ -8,6 +8,9 @@ import "./globals.css";
 // Theme Provider
 import { ThemeProvider } from "next-themes";
 
+// CLerk Provider
+import { ClerkProvider } from "@clerk/nextjs";
+
 // Fonts
 const geistSansFont = Geist({
   variable: "--font-geist-sans",
@@ -21,10 +24,9 @@ const geistMonoFont = Geist_Mono({
 
 const BarlowFont = Barlow({
   subsets: ["latin"],
-  weight: ['500','700'],
-  variable: "--font-barlow"
-})
-
+  weight: ["500", "700"],
+  variable: "--font-barlow",
+});
 
 //MetaDATA
 export const metadata: Metadata = {
@@ -38,18 +40,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSansFont.variable} ${geistMonoFont.variable} ${BarlowFont.variable} antialiased`}>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${geistSansFont.variable} ${geistMonoFont.variable} ${BarlowFont.variable} antialiased`}
+        >
           <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
           >
-          {children}
-         </ThemeProvider>
-      </body>
-    </html>
+            {children}
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
