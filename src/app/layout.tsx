@@ -1,17 +1,32 @@
+//Next.js
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Barlow } from "next/font/google";
+
+// Global CSS
 import "./globals.css";
 
-const geistSans = Geist({
+// Theme Provider
+import { ThemeProvider } from "next-themes";
+
+// Fonts
+const geistSansFont = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const geistMonoFont = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
+const BarlowFont = Barlow({
+  subsets: ["latin"],
+  weight: ['500','700'],
+  variable: "--font-barlow"
+})
+
+
+//MetaDATA
 export const metadata: Metadata = {
   title: "KFP WEBSITE",
   description: "Welcome to KFP ditrubution",
@@ -23,11 +38,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+        className={`${geistSansFont.variable} ${geistMonoFont.variable} ${BarlowFont.variable} antialiased`}>
+          <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+          >
+          {children}
+         </ThemeProvider>
       </body>
     </html>
   );
