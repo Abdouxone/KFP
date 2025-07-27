@@ -1,4 +1,5 @@
 import Header from "@/components/dashboard/header/header";
+import Sidebar from "@/components/dashboard/header/sidebar/sidebar";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
@@ -16,6 +17,8 @@ export default async function AdminDashboardLayout({
   return (
     <div className="w-full h-full">
       {/*Sidebar*/}
+      <Sidebar isAdmin />
+
       <div className="w-full ml-[300px]">
         {/* Header */}
         <Header />
