@@ -11,7 +11,8 @@ export default function UserInfo({ user }: { user: User | null }) {
     <div>
       <div>
         <Button
-          className="w-full mt-5 mb-4 flex items-center justify-between py-10"
+          // i deleted justifybetween in classname if any problem with card restore it
+          className="w-full mt-5 mb-4 flex items-center py-10"
           variant="ghost"
         >
           <div className="flex items-center text-left gap-2 ">
