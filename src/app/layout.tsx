@@ -11,6 +11,9 @@ import { ThemeProvider } from "next-themes";
 // CLerk Provider
 import { ClerkProvider } from "@clerk/nextjs";
 
+//Toast
+import { Toaster } from "sonner";
+
 // Fonts
 const geistSansFont = Geist({
   variable: "--font-geist-sans",
@@ -52,6 +55,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster richColors position="top-right" />
           </ThemeProvider>
         </body>
       </html>

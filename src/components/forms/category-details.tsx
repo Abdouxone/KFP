@@ -7,11 +7,13 @@ import { CategoryFormSchema } from "@/lib/schemas";
 
 //React Component
 import { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 //form handling utilities
 import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+//UI Components
 import { AlertDialog } from "../ui/alert-dialog";
 import {
   Card,
@@ -34,6 +36,16 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
 import ImageUpload from "../dashboard/shared/image-upload";
+
+// queries import
+import { upsertCategory } from "@/queries/category";
+
+//Utils
+import { v4 } from "uuid";
+// import { useToast } from "../ui/use-toast";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
 interface CategoryDetailsProps {
   data?: Category;
   cloudinary_key: string;
@@ -43,6 +55,10 @@ const CategoryDetails: FC<CategoryDetailsProps> = ({
   data,
   cloudinary_key,
 }) => {
+  //Initializing necessary hooks
+  // const { toast } = useToast(); //Hook for displaying toast messages
+  const Router = useRouter(); //Hook for programmatic navigation
+
   //Form hook for managing form state and validation
   const form = useForm<z.infer<typeof CategoryFormSchema>>({
     mode: "onChange", //Validation mode
@@ -73,7 +89,41 @@ const CategoryDetails: FC<CategoryDetailsProps> = ({
 
   //submit handler for the form
   const handleSubmit = async (values: z.infer<typeof CategoryFormSchema>) => {
-    console.log(values);
+    try {
+      //Upserting category data
+
+      const response = await upsertCategory({
+        id: data?.id ? data.id : v4(),
+        name: values.name,
+        image: values.image[0].url,
+        url: values.url,
+        featured: values.featured ?? false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      // Redirect or Refresh data
+      if (data?.id) {
+        Router.refresh();
+      } else {
+        Router.push("/dashboard/admin/categories");
+      }
+
+      //Displaying success message
+      // toast({
+      //   title: data?.id
+      //     ? "Category has been updated."
+      //     : `Congratulations! '${response?.name}' is now created.} `,
+      // });
+      toast.success("yayyyyyyyyyyyyy");
+    } catch (error: any) {
+      console.log(error);
+      // toast({
+      //   variant: "destructive",
+      //   title: "Oops!",
+      //   description: error.toString(),
+      // });
+    }
   };
 
   return (
@@ -121,7 +171,7 @@ const CategoryDetails: FC<CategoryDetailsProps> = ({
                 )}
               />
               <FormField
-                disabled={isLoading}
+                // disabled={isLoading}
                 control={form.control}
                 name="name"
                 render={({ field }) => (
@@ -135,7 +185,7 @@ const CategoryDetails: FC<CategoryDetailsProps> = ({
                 )}
               />
               <FormField
-                disabled={isLoading}
+                // disabled={isLoading}
                 control={form.control}
                 name="url"
                 render={({ field }) => (
