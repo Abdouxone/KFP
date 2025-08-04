@@ -14,14 +14,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 //UI Components
-import { AlertDialog } from "../ui/alert-dialog";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -30,12 +30,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
+} from "@/components/ui/form";
 
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "../ui/checkbox";
-import { Button } from "../ui/button";
-import ImageUpload from "../dashboard/shared/image-upload";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import ImageUpload from "@/components/dashboard/shared/image-upload";
 
 // queries import
 import { upsertCategory } from "@/queries/category";
@@ -48,12 +48,12 @@ import { useRouter } from "next/navigation";
 
 interface CategoryDetailsProps {
   data?: Category;
-  cloudinary_key: string;
+  // cloudinary_key: string;
 }
 
 const CategoryDetails: FC<CategoryDetailsProps> = ({
   data,
-  cloudinary_key,
+  // cloudinary_key,
 }) => {
   //Initializing necessary hooks
   // const { toast } = useToast(); //Hook for displaying toast messages
@@ -115,9 +115,15 @@ const CategoryDetails: FC<CategoryDetailsProps> = ({
       //     ? "Category has been updated."
       //     : `Congratulations! '${response?.name}' is now created.} `,
       // });
-      toast.success("yayyyyyyyyyyyyy");
+
+      if (data?.id) {
+        toast.success("Category has been updated.");
+      } else {
+        toast.success(`Congratulations!  '${response?.name}' is now created.`);
+      }
     } catch (error: any) {
       console.log(error);
+      toast.error(error.toString());
       // toast({
       //   variant: "destructive",
       //   title: "Oops!",
@@ -153,7 +159,7 @@ const CategoryDetails: FC<CategoryDetailsProps> = ({
                     <FormControl>
                       <ImageUpload
                         type="profile"
-                        cloudinary_key={cloudinary_key}
+                        // cloudinary_key={cloudinary_key}
                         value={field.value.map((image) => image.url)}
                         disabled={isLoading}
                         onChange={(url) => field.onChange([{ url }])}

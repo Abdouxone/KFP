@@ -13,6 +13,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 
 //Toast
 import { Toaster } from "sonner";
+import ModalProvider from "@/providers/modal-provider";
 
 // Fonts
 const geistSansFont = Geist({
@@ -54,8 +55,8 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
-            <Toaster richColors position="top-right" />
+            <ModalProvider>{children}</ModalProvider>
+            <Toaster richColors position="top-center" />
           </ThemeProvider>
         </body>
       </html>
