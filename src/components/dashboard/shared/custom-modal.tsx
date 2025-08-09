@@ -30,7 +30,7 @@ const CustomModal = ({
 }: Props) => {
   const { isOpen, setClose } = useModal();
   return (
-    <Dialog open={isOpen || defaultOpen} onOpenChange={setClose}>
+    <Dialog open={isOpen || defaultOpen} onOpenChange={setClose} modal={false}>
       <DialogContent
         className={cn(
           "overflow-y-scroll md:max-h-[700px] md:h-fit h-screen bg-card",

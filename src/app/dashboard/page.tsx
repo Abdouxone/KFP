@@ -10,4 +10,7 @@ export default async function Dashboardpage() {
   if (user?.privateMetadata.role === "ADMIN") {
     redirect("/dashboard/admin");
   }
+  if (user?.privateMetadata.role === "SELLER") {
+    redirect("/dashboard/seller");
+  }
 }

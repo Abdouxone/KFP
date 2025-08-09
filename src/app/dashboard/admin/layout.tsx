@@ -1,6 +1,6 @@
 "use server";
 import Header from "@/components/dashboard/header/header";
-import Sidebar from "@/components/dashboard/header/sidebar/sidebar";
+import Sidebar from "@/components/dashboard/sidebar/sidebar";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
