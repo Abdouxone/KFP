@@ -36,16 +36,17 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import ImageUpload from "@/components/dashboard/shared/image-upload";
+import { Textarea } from "@/components/ui/textarea";
 
 // queries import
-import { upsertCategory } from "@/queries/category";
+import { upsertstore } from "@/queries/store";
 
 //Utils
 import { v4 } from "uuid";
+
 // import { useToast } from "../ui/use-toast";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Textarea } from "@/components/ui/textarea";
 
 interface StoreDetailsProps {
   data?: Store;
@@ -107,21 +108,33 @@ const StoreDetails: FC<StoreDetailsProps> = ({
     try {
       //Upserting category data
 
-      const response = await upsertCategory({
+      const response = await upsertstore({
         id: data?.id ? data.id : v4(),
         name: values.name,
-        image: values.image[0].url,
+        description: values.description,
+        email: values.email,
+        phone: values.phone,
+
+        logo: values.logo[0].url,
+        cover: values.cover[0].url,
         url: values.url,
         featured: values.featured ?? false,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
 
+      // Displaying success message
+      if (data?.id) {
+        toast.success("Store has been updated.");
+      } else {
+        toast.success(`Congratulations!  '${response?.name}' is now created.`);
+      }
+
       // Redirect or Refresh data
       if (data?.id) {
         Router.refresh();
       } else {
-        Router.push("/dashboard/admin/categories");
+        Router.push(`/dashboard/seller/stores/${response?.url}`);
       }
 
       //Displaying success message
@@ -130,12 +143,6 @@ const StoreDetails: FC<StoreDetailsProps> = ({
       //     ? "Category has been updated."
       //     : `Congratulations! '${response?.name}' is now created.} `,
       // });
-
-      if (data?.id) {
-        toast.success("Category has been updated.");
-      } else {
-        toast.success(`Congratulations!  '${response?.name}' is now created.`);
-      }
     } catch (error: any) {
       console.log(error);
       toast.error(error.toString());
