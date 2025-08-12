@@ -22,7 +22,7 @@ export default function SidebarNavSeller({
   const activeStore = storeUrlStart ? storeUrlStart.split("/")[0] : "";
 
   return (
-    <nav className="relative grow">
+    <nav className="relative grow mt-2">
       <Command className="rounded-lg overflow-visible bg-transparent">
         <CommandInput placeholder="Search..." />
         <CommandList className="py-2 overflow-visible">
@@ -35,7 +35,7 @@ export default function SidebarNavSeller({
               return (
                 <CommandItem
                   key={index}
-                  className={cn("w-full h-12 cursor-pointer mt-1", {
+                  className={cn("w-full !h-12 cursor-pointer mt-1", {
                     "bg-accent text-accent-foreground":
                       link.link === ""
                         ? pathname === `/dashboard/seller/stores/${activeStore}`
@@ -45,7 +45,7 @@ export default function SidebarNavSeller({
                 >
                   <Link
                     href={`/dashboard/seller/stores/${activeStore}/${link.link}`}
-                    className="flex items-center gap-2 hover:bg-transparent rounded-md transition-all w-full"
+                    className="flex items-center gap-2 hover:bg-transparent rounded-md transition-all w-full "
                   >
                     {icon}
                     <span>{link.label}</span>

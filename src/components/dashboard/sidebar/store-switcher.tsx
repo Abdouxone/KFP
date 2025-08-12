@@ -7,6 +7,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -15,8 +16,8 @@ import {
 } from "@/components/ui/popover";
 
 import { cn } from "@/lib/utils";
-import { ChevronsUpDown, StoreIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Check, ChevronsUpDown, PlusCircle, StoreIcon } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { FC, useState } from "react";
 import { string } from "zod";
 
@@ -29,6 +30,7 @@ interface StoreSwitcherProps extends PopoverTriggerProps {
 }
 
 const StoreSwitcher: FC<StoreSwitcherProps> = ({ stores, className }) => {
+  const params = useParams();
   const router = useRouter();
 
   // Format Stores data
@@ -38,6 +40,11 @@ const StoreSwitcher: FC<StoreSwitcherProps> = ({ stores, className }) => {
   }));
 
   const [open, setOpen] = useState(false);
+
+  // Get the active Store
+  const activeStore = formattedItems.find(
+    (store) => store.value === params.storeUrl
+  );
 
   const onStoreSelect = (store: { label: string; value: string }) => {
     setOpen(false);
@@ -55,7 +62,7 @@ const StoreSwitcher: FC<StoreSwitcherProps> = ({ stores, className }) => {
           className={cn("w-[250px] justify-between", className)}
         >
           <StoreIcon className="mr-2 w-4 h-4" />
-          Store Example
+          {activeStore?.label}
           <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -70,9 +77,29 @@ const StoreSwitcher: FC<StoreSwitcherProps> = ({ stores, className }) => {
                   key={store.value}
                   onSelect={() => onStoreSelect(store)}
                   className="text-sm cursor-pointer"
-                ></CommandItem>
+                >
+                  <StoreIcon className="mr-2 w-4 h-4 " />
+                  {store.label}
+                  <Check
+                    className={cn("ml-auto h-4 w-4 opacity-0", {
+                      "opacity-100": activeStore?.value === store.value,
+                    })}
+                  />
+                </CommandItem>
               ))}
             </CommandGroup>
+          </CommandList>
+          <CommandSeparator />
+          <CommandList>
+            <CommandItem
+              className="cursor-pointer "
+              onSelect={() => {
+                setOpen(false);
+                router.push("/dashboard/seller/stores/new");
+              }}
+            >
+              <PlusCircle className="!w-5 !h-5 mr-2  " /> Create Store
+            </CommandItem>
           </CommandList>
         </Command>
       </PopoverContent>
