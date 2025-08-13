@@ -1,4 +1,5 @@
 import { error } from "console";
+import { min } from "date-fns";
 import { url } from "inspector";
 import * as z from "zod";
 
@@ -109,4 +110,122 @@ export const StoreFormSchema = z.object({
     }),
   featured: z.boolean().default(false).optional(),
   status: z.string().default("PENDING").optional(),
+});
+
+// Product Schema
+export const ProductFormSchema = z.object({
+  name: z
+    .string("Product name must be a valid string.")
+    .min(2, { message: "Product name should be at least 2 characters long." })
+    .max(200, { message: "Product name cannot exceed 200 characters." })
+    .nonempty("Product name is required")
+    .regex(/^(?!.*(?:[-_ &' ]){2,})[a-zA-Z0-9_ '&-]+$/, {
+      message:
+        "Product name may only contain letters, numbers, spaces, hyphens, underscores, ampersands, and apostrophes, without consecutive special characters.",
+    }),
+  description: z
+    .string("Product description must be a valid string.")
+    .min(200, {
+      message: "Product description should be at least 200 characters long.",
+    })
+    .nonempty("Product description is required."),
+
+  variantName: z
+    .string("Product variant name must be a valid string.")
+    .min(2, {
+      message: "Product variant name should be at least 2 characters long.",
+    })
+    .max(100, { message: "Product variant name cannot exceed 100 characters." })
+    .nonempty("Product variant name is required.")
+    .regex(/^(?!.*(?:[-_ ]){2,})[a-zA-Z0-9_ -]+$/, {
+      message:
+        "Product variant name may only contain letters, numbers, spaces, hyphens, and underscores, without consecutive special characters.",
+    }),
+
+  variantDescription: z
+    .string("Product variant description must be a valid string.")
+    .min(2, {
+      message:
+        "Product variant description should be at least 2 characters long.",
+    })
+    .optional(),
+
+  images: z
+    .object({ url: z.string() })
+    .array()
+    .min(3, { message: "Please upload at least 3 images for the product." })
+    .max(6, { message: "You can upload up to 6 images for the product." }),
+
+  // variantImage: z
+  //   .object({ url: z.string() })
+  //   .array()
+  //   .length(1, "Choose a product variant image."),
+
+  categoryId: z
+    .string("Product category ID must be a valid string.")
+    .nonempty("Product category ID is required.")
+    .uuid(),
+
+  subCategoryId: z
+    .string("Product sub-category ID must be a valid string.")
+    .nonempty("Product sub-category ID is required.")
+    .uuid(),
+
+  // offerTagId: z
+  //   .string("Product offer tag ID must be a valid string.")
+  //   .nonempty("Product offer tag ID is required.")
+  //   .uuid()
+  //   .optional(),
+
+  brand: z
+    .string("Product brand must be a valid string.")
+    .nonempty("Product brand is required.")
+    .min(2, { message: "Product brand should be at least 2 characters." })
+    .max(50, { message: "Product brand cannot exceed 50 characters." }),
+
+  sku: z
+    .string("Product SKU must be valid string.")
+    .nonempty("Product SKU is required.")
+    .min(6, { message: "Product SKU should be at least 6 characters." })
+    .max(50, { message: "Product SKU cannot exceed 50 characters." }),
+
+  // weight: z
+  //   .number()
+  //   .min(0.01, "Please Provide a valid product weight.")
+  //   .optional(),
+
+  keywords: z
+    .string("Product keywords must be a valid string.")
+    .nonempty("Product keywords are required.")
+    .array()
+    .min(5, { message: "Please provide at least 5 keywords." })
+    .max(10, { message: "You can provide up to 10 keywords." }),
+
+  colors: z
+    .object({ color: z.string() })
+    .array()
+    .min(1, "Please provide at least 1 color.")
+    .refine((colors) => colors.every((c) => c.color.length > 0), {
+      message: "All color inputs must be filled",
+    }),
+
+  sizes: z
+    .object({
+      size: z.string(),
+      quantity: z
+        .number()
+        .min(1, { message: "Quantity must be greater than 0." }),
+
+      price: z.number().min(0.01, { message: "Price must be greater than 0." }),
+      // discount: z.number().min(0).default(0),
+    })
+    .array()
+    .min(1, "Please provide at least one size.")
+    .refine(
+      (sizes) =>
+        sizes.every((s) => s.size.length > 0 && s.price > 0 && s.quantity > 0),
+      { message: "All size inputs must be filled correctly." }
+    ),
+
+  isSale: z.boolean().default(false).optional(),
 });
