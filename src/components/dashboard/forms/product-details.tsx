@@ -51,6 +51,7 @@ import { useRouter } from "next/navigation";
 // Types
 import { ProductWithVariantType } from "@/lib/types";
 import ImagesPreviewGrid from "../shared/images-preview-grid";
+import ClickToAddInputs from "./click-to-add";
 
 interface ProductDetailsProps {
   data?: ProductWithVariantType;
@@ -68,6 +69,12 @@ const ProductDetails: FC<ProductDetailsProps> = ({
   //Initializing necessary hooks
   // const { toast } = useToast(); //Hook for displaying toast messages
   const Router = useRouter(); //Hook for programmatic navigation
+
+  // State for colors
+  const [colors, setColors] = useState<{ color: string }[]>(
+    data?.colors || [{ color: "" }]
+  );
+
   // Temporary state for images
   const [images, setImages] = useState<{ url: string }[]>([]);
 
@@ -154,6 +161,11 @@ const ProductDetails: FC<ProductDetailsProps> = ({
     }
   };
 
+  // Whenever colors, sizes, keywords changes we update the form values
+  useEffect(() => {
+    form.setValue("colors", colors);
+  }, [colors]);
+
   return (
     <AlertDialog>
       <Card className="w-full">
@@ -175,22 +187,25 @@ const ProductDetails: FC<ProductDetailsProps> = ({
             >
               {/* Images - colors */}
               <div className="flex flex-col gap-y-6 xl:flex-row">
+                {/* Images */}
                 <FormField
                   control={form.control}
                   name="images"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="w-full xl:border-r">
                       <FormControl>
                         <div>
                           <ImagesPreviewGrid
                             images={form.getValues().images}
-                            onRemove={(url) =>
-                              field.onChange([
-                                ...field.value.filter(
-                                  (current) => current.url !== url
-                                ),
-                              ])
-                            }
+                            onRemove={(url) => {
+                              const updatedImages = images.filter(
+                                (img) => img.url !== url
+                              );
+                              setImages(updatedImages);
+                              field.onChange(updatedImages);
+                            }}
+                            colors={colors}
+                            setColors={setColors}
                           />
                           <FormMessage className="!mt-4" />
                           <ImageUpload
@@ -222,6 +237,15 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                     </FormItem>
                   )}
                 />
+                {/* Colors */}
+                <div className="!w-full !flex !flex-col !gap-y-3 xl:pl-5">
+                  <ClickToAddInputs
+                    details={colors}
+                    setDetails={setColors}
+                    initialDetail={{ color: "" }}
+                    header="Colors"
+                  />
+                </div>
               </div>
               {/* Name */}
 
@@ -231,7 +255,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                 name="name"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>Store name</FormLabel>
+                    <FormLabel>Product name</FormLabel>
                     <FormControl>
                       <Input placeholder="Name" {...field} />
                     </FormControl>
@@ -246,7 +270,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                 name="description"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>Store description</FormLabel>
+                    <FormLabel>Product description</FormLabel>
                     <FormControl>
                       <Textarea placeholder="Description" {...field} />
                     </FormControl>
@@ -259,8 +283,8 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                 {isLoading
                   ? "loading..."
                   : data?.productId && data.variantId
-                  ? "Save Store information"
-                  : "Create Store"}
+                  ? "Save Product information"
+                  : "Create Product"}
               </Button>
             </form>
           </Form>
