@@ -125,8 +125,8 @@ export const ProductFormSchema = z.object({
     }),
   description: z
     .string("Product description must be a valid string.")
-    .min(200, {
-      message: "Product description should be at least 200 characters long.",
+    .min(2, {
+      message: "Product description should be at least 2 characters long.",
     })
     .nonempty("Product description is required."),
 
@@ -144,10 +144,6 @@ export const ProductFormSchema = z.object({
 
   variantDescription: z
     .string("Product variant description must be a valid string.")
-    .min(2, {
-      message:
-        "Product variant description should be at least 2 characters long.",
-    })
     .optional(),
 
   images: z
@@ -206,7 +202,7 @@ export const ProductFormSchema = z.object({
     .array()
     .min(1, "Please provide at least 1 color.")
     .refine((colors) => colors.every((c) => c.color.length > 0), {
-      message: "All color inputs must be filled",
+      message: "All color inputs must be filled.",
     }),
 
   sizes: z
@@ -216,7 +212,7 @@ export const ProductFormSchema = z.object({
         .number()
         .min(1, { message: "Quantity must be greater than 0." }),
 
-      price: z.number().min(0.01, { message: "Price must be greater than 0." }),
+      price: z.number().min(10, { message: "Price must be greater than 10." }),
       // discount: z.number().min(0).default(0),
     })
     .array()

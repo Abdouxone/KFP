@@ -176,6 +176,7 @@ const CategoryDetails: FC<CategoryDetailsProps> = ({
                   </FormItem>
                 )}
               />
+              {/*Name */}
               <FormField
                 // disabled={isLoading}
                 control={form.control}
@@ -190,6 +191,7 @@ const CategoryDetails: FC<CategoryDetailsProps> = ({
                   </FormItem>
                 )}
               />
+              {/* Url */}
               <FormField
                 // disabled={isLoading}
                 control={form.control}
@@ -204,6 +206,7 @@ const CategoryDetails: FC<CategoryDetailsProps> = ({
                   </FormItem>
                 )}
               />
+              {/* Featured */}
               <FormField
                 control={form.control}
                 name="featured"

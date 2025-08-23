@@ -1,6 +1,6 @@
 "use client";
 //Prisma Model
-import { Category, Store } from "@/generated/prisma/client";
+import { Category, Store, SubCategory } from "@/generated/prisma/client";
 
 // Schema import
 import { ProductFormSchema } from "@/lib/schemas";
@@ -40,6 +40,10 @@ import { Textarea } from "@/components/ui/textarea";
 
 // queries import
 import { upsertstore } from "@/queries/store";
+import { getAllSubCategoriesForCategory } from "@/queries/category";
+
+// ReactTags
+import { WithOutContext as ReactTags } from "react-tag-input";
 
 //Utils
 import { v4 } from "uuid";
@@ -52,6 +56,16 @@ import { useRouter } from "next/navigation";
 import { ProductWithVariantType } from "@/lib/types";
 import ImagesPreviewGrid from "../shared/images-preview-grid";
 import ClickToAddInputs from "./click-to-add";
+import { Span } from "next/dist/trace";
+import { se } from "date-fns/locale";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Divide } from "lucide-react";
 
 interface ProductDetailsProps {
   data?: ProductWithVariantType;
@@ -70,10 +84,18 @@ const ProductDetails: FC<ProductDetailsProps> = ({
   // const { toast } = useToast(); //Hook for displaying toast messages
   const Router = useRouter(); //Hook for programmatic navigation
 
+  // State for subCategories
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+
   // State for colors
   const [colors, setColors] = useState<{ color: string }[]>(
     data?.colors || [{ color: "" }]
   );
+
+  // State for sizes
+  const [sizes, setSizes] = useState<
+    { size: string; price: number; quantity: number; discount: number }[]
+  >([{ size: "", quantity: 1, price: 10, discount: 0 }]);
 
   // Temporary state for images
   const [images, setImages] = useState<{ url: string }[]>([]);
@@ -99,6 +121,18 @@ const ProductDetails: FC<ProductDetailsProps> = ({
       isSale: data?.isSale,
     },
   });
+
+  // UseEffect to get subCategories when user pick/change a category
+  useEffect(() => {
+    const getSubcategories = async () => {
+      const res = await getAllSubCategoriesForCategory(form.watch().categoryId);
+      setSubCategories(res);
+    };
+    getSubcategories();
+  }, [form.watch().categoryId]);
+
+  // Extract errors state from form
+  const errors = form.formState.errors;
 
   //Loading state for form submission
   const isLoading = form.formState.isSubmitting;
@@ -161,11 +195,30 @@ const ProductDetails: FC<ProductDetailsProps> = ({
     }
   };
 
+  //Handle keywords input
+  const [keywords, setKeywords] = useState<string[]>([]);
+  interface Keyword {
+    id: string;
+    text: string;
+  }
+
+  const handleAddition = (keyword: Keyword) => {
+    if (keywords.length === 10) return;
+    setKeywords([...keywords, keyword.text]);
+  };
+
+  const handleDeleteKeyword = (i: number) => {
+    setKeywords(keywords.filter((_, index) => index !== i));
+  };
+
   // Whenever colors, sizes, keywords changes we update the form values
   useEffect(() => {
     form.setValue("colors", colors);
-  }, [colors]);
+    form.setValue("sizes", sizes);
+    form.setValue("keywords", keywords);
+  }, [colors, sizes, keywords]);
 
+  console.log("form sizes", form.watch().sizes);
   return (
     <AlertDialog>
       <Card className="w-full">
@@ -244,41 +297,268 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                     setDetails={setColors}
                     initialDetail={{ color: "" }}
                     header="Colors"
+                    colorPicker
                   />
+                  {errors.colors && (
+                    <span className="text-sm font-medium text-destructive">
+                      {errors.colors.message}
+                    </span>
+                  )}
                 </div>
               </div>
               {/* Name */}
+              <div className="flex flex-col lg:flex-row gap-4">
+                <FormField
+                  // disabled={isLoading}
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Product name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  // disabled={isLoading}
+                  control={form.control}
+                  name="variantName"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Variant name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="variantName" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-              <FormField
-                // disabled={isLoading}
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>Product name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               {/* Description */}
+              <div className="flex flex-col lg:flex-row gap-4">
+                <FormField
+                  // disabled={isLoading}
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Product description</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Description" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  // disabled={isLoading}
+                  control={form.control}
+                  name="variantDescription"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Variant description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Variant Description"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Category - SubCategory */}
+              <div className="flex gap-4">
+                <FormField
+                  disabled={isLoading}
+                  control={form.control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <FormItem className="flex-1 relative">
+                      <FormLabel>Product Category</FormLabel>
+
+                      <Select
+                        disabled={isLoading || categories.length == 0}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue
+                              defaultValue={field.value}
+                              placeholder="Select a Category"
+                            />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {form.watch("categoryId") && (
+                  <FormField
+                    disabled={isLoading}
+                    control={form.control}
+                    name="subCategoryId"
+                    render={({ field }) => (
+                      <FormItem className="!flex-1 ">
+                        <FormLabel>Product subCategory</FormLabel>
+
+                        <Select
+                          disabled={isLoading || categories.length == 0}
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue
+                                defaultValue={field.value}
+                                placeholder="Select a subCategory"
+                              />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {subCategories.map((sub) => (
+                              <SelectItem key={sub.id} value={sub.id}>
+                                {sub.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+              {/* Brand-Sku */}
+              <div className="flex flex-col lg:flex-row gap-4">
+                <FormField
+                  // disabled={isLoading}
+                  control={form.control}
+                  name="brand"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Product Brand</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Brand" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  // disabled={isLoading}
+                  control={form.control}
+                  name="sku"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Product Sku</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Sku" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {/* Keywords */}
+              <div className="space-y-3">
+                <FormField
+                  control={form.control}
+                  name="keywords"
+                  render={({ field }) => (
+                    <FormItem className="relative flex-1">
+                      <FormLabel>Product Keywords</FormLabel>
+                      <FormControl>
+                        <ReactTags
+                          handleAddition={handleAddition}
+                          placeholder="KeyWords (e.g., winter jacket, warm, stylish)"
+                          classNames={{
+                            tagInputField:
+                              "bg-background border rounded-md p-2 w-full focus:outline-none",
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <div className="flex flex-wrap gap-1">
+                  {keywords.map((k, i) => (
+                    <div
+                      key={i}
+                      className="text-sm inline-flex items-center px-3 py-1 bg-blue-200 text-blue-700 rounded-full gap-x-2"
+                    >
+                      <span>{k}</span>
+                      <span
+                        className="cursor-pointer"
+                        onClick={() => handleDeleteKeyword(i)}
+                      >
+                        x
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Sizes */}
+              <div className="w-full flex flex-col gap-y-3 ">
+                <ClickToAddInputs
+                  details={sizes}
+                  setDetails={setSizes}
+                  initialDetail={{
+                    size: "",
+                    quantity: 1,
+                    price: 10,
+                    discount: 0,
+                  }}
+                  header="Sizes,   Quantity,   Prices,   Discount"
+                />
+                {errors.sizes && (
+                  <span className="text-sm font-medium text-destructive">
+                    {errors.sizes.message}
+                  </span>
+                )}
+              </div>
+              {/* Is On Sale */}
               <FormField
-                // disabled={isLoading}
                 control={form.control}
-                name="description"
+                name="isSale"
                 render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>Product description</FormLabel>
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <Textarea placeholder="Description" {...field} />
+                      <Checkbox
+                        checked={field.value}
+                        // @ts-ignore
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>On Sale</FormLabel>
+                      <FormDescription>
+                        Is this product on sale?
+                      </FormDescription>
+                    </div>
                   </FormItem>
                 )}
               />
-
+              {/*Submit button */}
               <Button type="submit" disabled={isLoading}>
                 {isLoading
                   ? "loading..."
