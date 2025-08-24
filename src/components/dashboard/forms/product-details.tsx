@@ -39,7 +39,7 @@ import ImageUpload from "@/components/dashboard/shared/image-upload";
 import { Textarea } from "@/components/ui/textarea";
 
 // queries import
-import { upsertstore } from "@/queries/store";
+import { upsertProduct } from "@/queries/product";
 import { getAllSubCategoriesForCategory } from "@/queries/category";
 
 // ReactTags
@@ -56,8 +56,7 @@ import { useRouter } from "next/navigation";
 import { ProductWithVariantType } from "@/lib/types";
 import ImagesPreviewGrid from "../shared/images-preview-grid";
 import ClickToAddInputs from "./click-to-add";
-import { Span } from "next/dist/trace";
-import { se } from "date-fns/locale";
+
 import {
   Select,
   SelectContent,
@@ -68,17 +67,15 @@ import {
 import { Divide } from "lucide-react";
 
 interface ProductDetailsProps {
-  data?: ProductWithVariantType;
+  data?: Partial<ProductWithVariantType>;
   categories: Category[];
-  StoreUrl: string;
-  // cloudinary_key: string;
+  storeUrl: string;
 }
 
 const ProductDetails: FC<ProductDetailsProps> = ({
   data,
   categories,
-  StoreUrl,
-  // cloudinary_key,
+  storeUrl,
 }) => {
   //Initializing necessary hooks
   // const { toast } = useToast(); //Hook for displaying toast messages
@@ -94,8 +91,8 @@ const ProductDetails: FC<ProductDetailsProps> = ({
 
   // State for sizes
   const [sizes, setSizes] = useState<
-    { size: string; price: number; quantity: number; discount: number }[]
-  >([{ size: "", quantity: 1, price: 10, discount: 0 }]);
+    { size: string; price: number; quantity: number; discount?: number }[]
+  >(data?.sizes || [{ size: "", quantity: 1, price: 10, discount: 0 }]);
 
   // Temporary state for images
   const [images, setImages] = useState<{ url: string }[]>([]);
@@ -149,33 +146,42 @@ const ProductDetails: FC<ProductDetailsProps> = ({
     try {
       //Upserting category data
 
-      const response = await upsertstore({
-        id: data?.id ? data.id : v4(),
-        name: values.name,
-        description: values.description,
-        email: values.email,
-        phone: values.phone,
-
-        logo: values.logo[0].url,
-        cover: values.cover[0].url,
-        url: values.url,
-        featured: values.featured ?? false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
+      const response = await upsertProduct(
+        {
+          productId: data?.productId ? data.productId : v4(),
+          variantId: data?.variantId ? data.variantId : v4(),
+          name: values.name,
+          description: values.description,
+          variantName: values.variantName,
+          variantDescription: values.variantDescription || "",
+          categoryId: values.categoryId,
+          subCategoryId: values.subCategoryId,
+          images: values.images,
+          isSale: values.isSale || false,
+          brand: values.brand,
+          sku: values.sku,
+          colors: values.colors,
+          sizes: values.sizes || [],
+          keywords: values.keywords || [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        storeUrl
+      );
       // Displaying success message
-      if (data?.id) {
-        toast.success("Store has been updated.");
+      if (data?.productId && data?.variantId) {
+        toast.success("Product has been updated.");
       } else {
-        toast.success(`Congratulations!  '${response?.name}' is now created.`);
+        toast.success(
+          `Congratulations!  product'${response?.slug}' is now created.`
+        );
       }
 
       // Redirect or Refresh data
-      if (data?.id) {
+      if (data?.productId && data?.variantId) {
         Router.refresh();
       } else {
-        Router.push(`/dashboard/seller/stores/${response?.url}`);
+        Router.push(`/dashboard/seller/stores/${storeUrl}/products`);
       }
 
       //Displaying success message
@@ -196,7 +202,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
   };
 
   //Handle keywords input
-  const [keywords, setKeywords] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState<string[]>(data?.keywords || []);
   interface Keyword {
     id: string;
     text: string;
@@ -376,7 +382,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
               {/* Category - SubCategory */}
               <div className="flex gap-4">
                 <FormField
-                  disabled={isLoading}
+                  // disabled={isLoading}
                   control={form.control}
                   name="categoryId"
                   render={({ field }) => (
@@ -412,7 +418,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                 />
                 {form.watch("categoryId") && (
                   <FormField
-                    disabled={isLoading}
+                    // disabled={isLoading}
                     control={form.control}
                     name="subCategoryId"
                     render={({ field }) => (
@@ -490,6 +496,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                       <FormControl>
                         <ReactTags
                           handleAddition={handleAddition}
+                          handleDelete={() => {}}
                           placeholder="KeyWords (e.g., winter jacket, warm, stylish)"
                           classNames={{
                             tagInputField:

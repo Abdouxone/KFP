@@ -26,7 +26,7 @@ export type ProductWithVariantType = {
   brand: string;
   sku: string;
   colors: { color: string }[];
-  sizes: { size: string; quantity: number; price: number; discount: number }[];
+  sizes: { size: string; quantity: number; price: number; discount?: number }[];
   keywords: string[];
   isSale: boolean;
   createdAt: Date;

@@ -1,9 +1,14 @@
 // UI Components
 import { Input } from "@/components/ui/input";
 
+//Icons
+import { PaintBucket } from "lucide-react";
+
 // React, Next.js
 import React, { FC, useState } from "react";
-import { property } from "zod";
+
+// Color Picker
+import { SketchPicker } from "react-color";
 
 // Define the interface for each detail object
 export interface Detail {
@@ -127,7 +132,30 @@ const ClickToAddInputs: FC<ClickToAddInputsProps> = ({
             <div key={propIndex} className="flex items-center gap-x-4">
               {/* Color picker toggle */}
               {property === "color" && colorPicker && (
-                <div className="flex gap-x-4"></div>
+                <div className="flex gap-x-4">
+                  <button
+                    type="button"
+                    className="cursor-pointer"
+                    onClick={() =>
+                      setColorPickerIndex(
+                        colorPickerIndex === index ? null : index
+                      )
+                    }
+                  >
+                    <PaintBucket />
+                  </button>
+                  <span
+                    className="w-8 h-8 rounded-full"
+                    style={{ backgroundColor: detail[property] as string }}
+                  />
+                </div>
+              )}
+              {/* Color Picker */}
+              {colorPickerIndex === index && property === "color" && (
+                <SketchPicker
+                  color={detail[property] as string}
+                  onChange={(e) => handleDetailsChange(index, property, e.hex)}
+                />
               )}
               {/* Input field for each property */}
               <Input

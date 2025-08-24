@@ -9,7 +9,7 @@ export default async function SellerNewProductPage({
   const categories = await getAllCategories();
   return (
     <div className="w-full">
-      <ProductDetails categories={categories} StoreUrl="params.storeUrl" />
+      <ProductDetails categories={categories} storeUrl={params.storeUrl} />
     </div>
   );
 }

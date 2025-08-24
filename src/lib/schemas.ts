@@ -194,7 +194,7 @@ export const ProductFormSchema = z.object({
     .string("Product keywords must be a valid string.")
     .nonempty("Product keywords are required.")
     .array()
-    .min(5, { message: "Please provide at least 5 keywords." })
+    .min(1, { message: "Please provide at least 5 keywords." })
     .max(10, { message: "You can provide up to 10 keywords." }),
 
   colors: z
@@ -213,7 +213,7 @@ export const ProductFormSchema = z.object({
         .min(1, { message: "Quantity must be greater than 0." }),
 
       price: z.number().min(10, { message: "Price must be greater than 10." }),
-      // discount: z.number().min(0).default(0),
+      discount: z.number().min(0).default(0).optional(),
     })
     .array()
     .min(1, "Please provide at least one size.")
