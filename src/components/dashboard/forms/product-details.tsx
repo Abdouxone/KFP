@@ -6,7 +6,7 @@ import { Category, Store, SubCategory } from "@/generated/prisma/client";
 import { ProductFormSchema } from "@/lib/schemas";
 
 //React Component
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 //form handling utilities
 import * as z from "zod";
@@ -37,6 +37,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import ImageUpload from "@/components/dashboard/shared/image-upload";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // queries import
 import { upsertProduct } from "@/queries/product";
@@ -64,7 +65,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Divide } from "lucide-react";
+
+// React date time picker
+import DateTimePicker from "react-datetime-picker";
+import "react-datetime-picker/dist/DateTimePicker.css";
+import "react-calendar/dist/Calendar.css";
+import "react-clock/dist/Clock.css";
+import { format } from "date-fns";
+
+// Jodit text editor
+import JoditEditor from "jodit-react";
 
 interface ProductDetailsProps {
   data?: Partial<ProductWithVariantType>;
@@ -83,6 +93,10 @@ const ProductDetails: FC<ProductDetailsProps> = ({
 
   // State for subCategories
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+
+  // Jodit Editor refs
+  const productDescEditor = useRef(null);
+  const variantDescEditor = useRef(null);
 
   // State for colors
   const [colors, setColors] = useState<{ color: string }[]>(
@@ -112,10 +126,13 @@ const ProductDetails: FC<ProductDetailsProps> = ({
       brand: data?.brand ?? "",
       sku: data?.sku ?? "",
       images: data?.images || [],
+      variantImage: data?.variantImage ? [{ url: data?.variantImage }] : [],
       colors: data?.colors || [{ color: "" }],
       sizes: data?.sizes,
       keywords: data?.keywords,
       isSale: data?.isSale,
+      saleEndDate:
+        data?.saleEndDate || format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
     },
   });
 
@@ -137,7 +154,10 @@ const ProductDetails: FC<ProductDetailsProps> = ({
   //Reset form values when data changes
   useEffect(() => {
     if (data) {
-      form.reset(data);
+      form.reset({
+        ...data,
+        variantImage: [{ url: data?.variantImage }],
+      });
     }
   }, [data, form]);
 
@@ -157,6 +177,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
           categoryId: values.categoryId,
           subCategoryId: values.subCategoryId,
           images: values.images,
+          variantImage: values.variantImage[0].url,
           isSale: values.isSale || false,
           brand: values.brand,
           sku: values.sku,
@@ -224,6 +245,9 @@ const ProductDetails: FC<ProductDetailsProps> = ({
     form.setValue("keywords", keywords);
   }, [colors, sizes, keywords]);
 
+  console.log("product description===>", form.getValues().description);
+  console.log("variant description===>", form.getValues().variantDescription);
+
   console.log("form sizes", form.watch().sizes);
   return (
     <AlertDialog>
@@ -272,7 +296,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                             type="standard"
                             // cloudinary_key={cloudinary_key}
                             value={field.value.map((image) => image.url)}
-                            disabled={isLoading}
+                            // disabled={isLoading}
                             onChange={(url) => {
                               setImages((prevImages) => {
                                 const updatedImages = [
@@ -343,44 +367,59 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                   )}
                 />
               </div>
-
-              {/* Description */}
-              <div className="flex flex-col lg:flex-row gap-4">
-                <FormField
-                  // disabled={isLoading}
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Product description</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Description" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  // disabled={isLoading}
-                  control={form.control}
-                  name="variantDescription"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Variant description</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Variant Description"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              {/* Product and variant description editors (tabs) */}
+              <Tabs defaultValue="product" className="w-full">
+                <TabsList className="w-full grid-cols-2">
+                  <TabsTrigger value="product">Product description</TabsTrigger>
+                  <TabsTrigger value="variant">Variant description</TabsTrigger>
+                </TabsList>
+                <TabsContent value="product">
+                  <FormField
+                    // disabled={isLoading}
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <JoditEditor
+                            ref={productDescEditor}
+                            value={form.getValues().description || ""}
+                            onChange={(content) => {
+                              form.setValue("description", content);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </TabsContent>
+                <TabsContent value="variant">
+                  <FormField
+                    // disabled={isLoading}
+                    control={form.control}
+                    name="variantDescription"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <JoditEditor
+                            ref={variantDescEditor}
+                            value={form.getValues().variantDescription || ""}
+                            onChange={(content) => {
+                              form.setValue("variantDescription", content);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </TabsContent>
+              </Tabs>
+              {/*Product Description */}
 
               {/* Category - SubCategory */}
-              <div className="flex gap-4">
+              <div className="flex gap-4 ">
                 <FormField
                   // disabled={isLoading}
                   control={form.control}
@@ -485,43 +524,76 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                   )}
                 />
               </div>
-              {/* Keywords */}
-              <div className="space-y-3">
-                <FormField
-                  control={form.control}
-                  name="keywords"
-                  render={({ field }) => (
-                    <FormItem className="relative flex-1">
-                      <FormLabel>Product Keywords</FormLabel>
-                      <FormControl>
-                        <ReactTags
-                          handleAddition={handleAddition}
-                          handleDelete={() => {}}
-                          placeholder="KeyWords (e.g., winter jacket, warm, stylish)"
-                          classNames={{
-                            tagInputField:
-                              "bg-background border rounded-md p-2 w-full focus:outline-none",
-                          }}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <div className="flex flex-wrap gap-1">
-                  {keywords.map((k, i) => (
-                    <div
-                      key={i}
-                      className="text-sm inline-flex items-center px-3 py-1 bg-blue-200 text-blue-700 rounded-full gap-x-2"
-                    >
-                      <span>{k}</span>
-                      <span
-                        className="cursor-pointer"
-                        onClick={() => handleDeleteKeyword(i)}
+              {/*Variant Image -Keywords */}
+              <div className="flex items-center gap-10 py-14">
+                {/* Variant Image */}
+                <div className="border-r pr-10">
+                  <FormField
+                    control={form.control}
+                    name="variantImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="ml-14">Variant Image</FormLabel>
+                        <FormControl>
+                          <ImageUpload
+                            dontShowPreview
+                            type="profile"
+                            value={field.value.map((image) => image.url)}
+                            // disabled={isLoading}
+                            onChange={(url) => field.onChange([{ url }])}
+                            onRemove={(url) =>
+                              field.onChange([
+                                ...field.value.filter(
+                                  (current) => current.url !== url
+                                ),
+                              ])
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage className="!mt-4" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Keywords */}
+                <div className="w-full flex-1 space-y-3">
+                  <FormField
+                    control={form.control}
+                    name="keywords"
+                    render={({ field }) => (
+                      <FormItem className="relative flex-1">
+                        <FormLabel>Product Keywords</FormLabel>
+                        <FormControl>
+                          <ReactTags
+                            handleAddition={handleAddition}
+                            handleDelete={() => {}}
+                            placeholder="KeyWords (e.g., coude, bronze, multicouche)"
+                            classNames={{
+                              tagInputField:
+                                "bg-background border rounded-md p-2 w-full focus:outline-none",
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex flex-wrap gap-1">
+                    {keywords.map((k, i) => (
+                      <div
+                        key={i}
+                        className="text-sm inline-flex items-center px-3 py-1 bg-blue-200 text-blue-700 rounded-full gap-x-2"
                       >
-                        x
-                      </span>
-                    </div>
-                  ))}
+                        <span>{k}</span>
+                        <span
+                          className="cursor-pointer"
+                          onClick={() => handleDeleteKeyword(i)}
+                        >
+                          x
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
               {/* Sizes */}
@@ -544,27 +616,49 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                 )}
               </div>
               {/* Is On Sale */}
-              <FormField
-                control={form.control}
-                name="isSale"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        // @ts-ignore
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>On Sale</FormLabel>
-                      <FormDescription>
-                        Is this product on sale?
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
+              <div className="flex border rounded-md">
+                <FormField
+                  control={form.control}
+                  name="isSale"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          // @ts-ignore
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>On Sale</FormLabel>
+                        <FormDescription>
+                          Is this product on sale?
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                {/* Sale End Date */}
+                <FormField
+                  control={form.control}
+                  name="saleEndDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 p-4">
+                      <FormControl>
+                        <DateTimePicker
+                          onChange={(date) => {
+                            field.onChange(
+                              date ? format(date, "yyyy-MM-dd'T'HH:mm:ss") : ""
+                            );
+                          }}
+                          value={field.value ? new Date(field.value) : null}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               {/*Submit button */}
               <Button type="submit" disabled={isLoading}>
                 {isLoading

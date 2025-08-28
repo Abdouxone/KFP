@@ -1,4 +1,5 @@
 import { Prisma } from "@/generated/prisma";
+import { getAllStoreProducts } from "@/queries/product";
 import { getAllSubCategories } from "@/queries/Subcategory";
 
 export interface DashboardSidebarMenuInterface {
@@ -21,6 +22,7 @@ export type ProductWithVariantType = {
   variantName: string;
   variantDescription: string;
   images: { url: string }[];
+  variantImage: string;
   categoryId: string;
   subCategoryId: string;
   brand: string;
@@ -29,6 +31,12 @@ export type ProductWithVariantType = {
   sizes: { size: string; quantity: number; price: number; discount?: number }[];
   keywords: string[];
   isSale: boolean;
+  saleEndDate?: string;
   createdAt: Date;
   updatedAt: Date;
 };
+
+// Store Product Type
+export type StoreProductType = Prisma.PromiseReturnType<
+  typeof getAllStoreProducts
+>[0];

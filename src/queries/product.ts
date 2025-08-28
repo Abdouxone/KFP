@@ -103,6 +103,7 @@ export const upsertProduct = async (
           alt: image.url.split("/").pop() || "",
         })),
       },
+      variantImage: product.variantImage,
       colors: {
         create: product.colors.map((color) => ({
           name: color.color,
@@ -177,4 +178,101 @@ export const getProductMainInfo = async (productId: string) => {
     subCategoryId: product.subCategoryId,
     storeUrl: product.storeId,
   };
+};
+
+// Function: getAllStoreProducts
+// Description: Retrieves all products from a specific store based on the store Url.
+// Access Level: Public
+// Parameters:
+// - storeUrl: The URL of the store whose products are to be retrieved.
+// - Returns: An array of products from the specific store, including category, subcategory, and variant details.
+
+export const getAllStoreProducts = async (storeUrl: string) => {
+  // Retrieve store details from the database using the storeURL
+  const store = await db.store.findUnique({
+    where: {
+      url: storeUrl,
+    },
+  });
+
+  // If no store found throw an error
+  if (!store) throw new Error("Please provide a valid Store URL.");
+
+  // Retrieve all products associated with the store
+  const products = await db.product.findMany({
+    where: {
+      storeId: store.id,
+    },
+    include: {
+      category: true,
+      subCategory: true,
+      variants: {
+        include: {
+          colors: true,
+          sizes: true,
+          images: true,
+        },
+      },
+      store: {
+        select: {
+          id: true,
+          url: true,
+        },
+      },
+    },
+  });
+  return products;
+};
+
+// Function: deleteProduct
+// Description: Deletes a product from the databsae
+// Permission Level: Seller
+// Parameters:
+//  - productI: The ID of the product to be deleted
+// Returns: Response indicating success or failure of the deletion operation.
+
+export const deleteProduct = async (productId: string) => {
+  // Get current user
+  const user = await currentUser();
+
+  // check if yser is authenticated
+  if (!user) throw new Error("Unauthenticated.");
+
+  // Ensure user has seller privileges
+  if (user.privateMetadata.role !== "SELLER") {
+    throw new Error(
+      "Unauthorized Access: Seller Privileges Required for Entry!"
+    );
+  }
+
+  // Ensure product data is provided
+  if (!productId) throw new Error("Please provide product ID.");
+
+  // // Delete product variants first
+  // await db.productVariant.deleteMany({
+  //   where: { productId },
+  // });
+  // Delete all children first
+  const variants = await db.productVariant.findMany({
+    where: { productId },
+    select: { id: true },
+  });
+
+  for (const variant of variants) {
+    await db.color.deleteMany({ where: { productVariantId: variant.id } });
+    await db.size.deleteMany({ where: { productVariantId: variant.id } });
+    await db.productVariantImage.deleteMany({
+      where: { productVariantId: variant.id },
+    });
+
+    await db.productVariant.delete({ where: { id: variant.id } });
+  }
+
+  // Delete product from the database
+  const response = await db.product.delete({
+    where: {
+      id: productId,
+    },
+  });
+  return response;
 };

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 
-export default function Home() {
+export default async function HomePage() {
   return (
     <div className="p-5">
       <div className="w-100 flex gap-x-5 justify-end">

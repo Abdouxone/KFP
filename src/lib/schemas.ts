@@ -152,10 +152,10 @@ export const ProductFormSchema = z.object({
     .min(3, { message: "Please upload at least 3 images for the product." })
     .max(6, { message: "You can upload up to 6 images for the product." }),
 
-  // variantImage: z
-  //   .object({ url: z.string() })
-  //   .array()
-  //   .length(1, "Choose a product variant image."),
+  variantImage: z
+    .object({ url: z.string() })
+    .array()
+    .length(1, "Choose a product variant image."),
 
   categoryId: z
     .string("Product category ID must be a valid string.")
@@ -224,4 +224,5 @@ export const ProductFormSchema = z.object({
     ),
 
   isSale: z.boolean().default(false).optional(),
+  saleEndDate: z.string().optional(),
 });

@@ -106,7 +106,7 @@ model Store {
 model Product {
   id          String @id @default(uuid())
   name        String
-  description String
+  description String @db.LongText
   slug        String @unique
   brand       String
   rating      Float? @default(0)
@@ -133,14 +133,16 @@ model Product {
 model ProductVariant {
   id                 String  @id @default(uuid())
   variantName        String
-  variantDescription String
+  variantDescription String?  @db.LongText
+  variantImage       String
   slug               String  @unique
   isSale             Boolean @default(false)
+  saleEndDate        String?
   keywords           String
   sku                String
 
   productId String
-  product   Product @relation("ProductToProductVariant", fields: [productId], references: [id])
+  product   Product @relation("ProductToProductVariant", fields: [productId], references: [id], onDelete: Cascade)
 
   sizes  Size[]                @relation("ProductVariantSizes")
   images ProductVariantImage[] @relation("ProductVariantToVariantImage")
@@ -160,7 +162,7 @@ model Size {
   discount Float  @default(0)
 
   productVariantId String
-  productVariant   ProductVariant @relation("ProductVariantSizes", fields: [productVariantId], references: [id])
+  productVariant   ProductVariant @relation("ProductVariantSizes", fields: [productVariantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -174,7 +176,7 @@ model ProductVariantImage {
   alt String @default("")
 
   productVariantId String
-  productVariant   ProductVariant @relation("ProductVariantToVariantImage", fields: [productVariantId], references: [id])
+  productVariant   ProductVariant @relation("ProductVariantToVariantImage", fields: [productVariantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -187,7 +189,7 @@ model Color {
   name String
 
   productVariantId String
-  productVariant   ProductVariant @relation("ProductVariantColors", fields: [productVariantId], references: [id])
+  productVariant   ProductVariant @relation("ProductVariantColors", fields: [productVariantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
