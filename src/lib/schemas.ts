@@ -222,7 +222,38 @@ export const ProductFormSchema = z.object({
         sizes.every((s) => s.size.length > 0 && s.price > 0 && s.quantity > 0),
       { message: "All size inputs must be filled correctly." }
     ),
+  product_specs: z
+    .object({
+      name: z.string(),
+      value: z.string(),
+    })
+    .array()
+    .min(1, "Please provide at least one product spec.")
+    .refine(
+      (product_specs) =>
+        product_specs.every((s) => s.name.length > 0 && s.value.length > 0),
+      { message: "All product specs must be filled correctly." }
+    ),
 
+  variant_specs: z
+    .object({
+      name: z.string(),
+      value: z.string(),
+    })
+    .array()
+    .min(1, "Please provide at least one product variant spec.")
+    .refine(
+      (variant_specs) =>
+        variant_specs.every((s) => s.name.length > 0 && s.value.length > 0),
+      { message: "All product variant specs must be filled correctly." }
+    ),
+  questions: z
+    .object({
+      question: z.string(),
+      answer: z.string(),
+    })
+    .array()
+    .optional(),
   isSale: z.boolean().default(false).optional(),
   saleEndDate: z.string().optional(),
 });

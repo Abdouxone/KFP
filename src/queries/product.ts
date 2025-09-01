@@ -83,6 +83,19 @@ export const upsertProduct = async (
       description: product.description,
       slug: productSlug,
       brand: product.brand,
+      questions: {
+        create: product.questions.map((q) => ({
+          question: q.question,
+          answer: q.answer,
+        })),
+      },
+      specs: {
+        create: product.product_specs.map((spec) => ({
+          name: spec.name,
+          value: spec.value,
+        })),
+      },
+
       store: { connect: { id: store.id } },
       category: { connect: { id: product.categoryId } },
       subCategory: { connect: { id: product.subCategoryId } },
@@ -94,6 +107,13 @@ export const upsertProduct = async (
       variantName: product.variantName,
       variantDescription: product.variantDescription,
       slug: variantSlug,
+      specs: {
+        create: product.variant_specs.map((spec) => ({
+          name: spec.name,
+          value: spec.value,
+        })),
+      },
+      saleEndDate: product.isSale ? product.saleEndDate : "",
       isSale: product.isSale,
       sku: product.sku,
       keywords: product.keywords.join(","),

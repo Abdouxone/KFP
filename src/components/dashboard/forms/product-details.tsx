@@ -108,6 +108,21 @@ const ProductDetails: FC<ProductDetailsProps> = ({
     { size: string; price: number; quantity: number; discount?: number }[]
   >(data?.sizes || [{ size: "", quantity: 1, price: 10, discount: 0 }]);
 
+  // State for product specs
+  const [productSpecs, setProductSpecs] = useState<
+    { name: string; value: string }[]
+  >(data?.product_specs || [{ name: "", value: "" }]);
+
+  // State for variant specs
+  const [variantSpecs, setVariantSpecs] = useState<
+    { name: string; value: string }[]
+  >(data?.variant_specs || [{ name: "", value: "" }]);
+
+  // State for questions
+  const [questions, setQuestions] = useState<
+    { question: string; answer: string }[]
+  >(data?.questions || [{ question: "", answer: "" }]);
+
   // Temporary state for images
   const [images, setImages] = useState<{ url: string }[]>([]);
 
@@ -129,7 +144,10 @@ const ProductDetails: FC<ProductDetailsProps> = ({
       variantImage: data?.variantImage ? [{ url: data?.variantImage }] : [],
       colors: data?.colors || [{ color: "" }],
       sizes: data?.sizes,
+      product_specs: data?.product_specs,
+      variant_specs: data?.variant_specs,
       keywords: data?.keywords,
+      questions: data?.questions,
       isSale: data?.isSale,
       saleEndDate:
         data?.saleEndDate || format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
@@ -182,8 +200,11 @@ const ProductDetails: FC<ProductDetailsProps> = ({
           brand: values.brand,
           sku: values.sku,
           colors: values.colors,
-          sizes: values.sizes || [],
-          keywords: values.keywords || [],
+          sizes: values.sizes,
+          product_specs: values.product_specs,
+          variant_specs: values.variant_specs,
+          keywords: values.keywords,
+          questions: values.questions || [],
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -243,7 +264,9 @@ const ProductDetails: FC<ProductDetailsProps> = ({
     form.setValue("colors", colors);
     form.setValue("sizes", sizes);
     form.setValue("keywords", keywords);
-  }, [colors, sizes, keywords]);
+    form.setValue("product_specs", productSpecs);
+    form.setValue("variant_specs", variantSpecs);
+  }, [colors, sizes, keywords, productSpecs, variantSpecs, data]);
 
   console.log("product description===>", form.getValues().description);
   console.log("variant description===>", form.getValues().variantDescription);
@@ -416,7 +439,6 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                   />
                 </TabsContent>
               </Tabs>
-              {/*Product Description */}
 
               {/* Category - SubCategory */}
               <div className="flex gap-4 ">
@@ -615,6 +637,65 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                   </span>
                 )}
               </div>
+
+              {/* product and variant specs */}
+              <Tabs defaultValue="productSpecs" className="w-full">
+                <TabsList>
+                  <TabsTrigger value="productSpecs">
+                    Product Specifications
+                  </TabsTrigger>
+                  <TabsTrigger value="variantSpecs">
+                    Variant Specifications
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="productSpecs">
+                  <div className="w-full flex flex-col gap-y-3">
+                    <ClickToAddInputs
+                      details={productSpecs}
+                      setDetails={setProductSpecs}
+                      initialDetail={{ name: "", value: "" }}
+                    />
+                    {errors.product_specs && (
+                      <span className="text-sm font-medium text-destructive">
+                        {errors.product_specs.message}
+                      </span>
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent value="variantSpecs">
+                  <div className="w-full flex flex-col gap-y-3">
+                    <ClickToAddInputs
+                      details={variantSpecs}
+                      setDetails={setVariantSpecs}
+                      initialDetail={{ name: "", value: "" }}
+                    />
+                    {errors.variant_specs && (
+                      <span className="text-sm font-medium text-destructive">
+                        {errors.variant_specs.message}
+                      </span>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              {/* Questions */}
+              <div className="w-full flex flex-col gap-y-3 ">
+                <ClickToAddInputs
+                  details={questions}
+                  setDetails={setQuestions}
+                  initialDetail={{
+                    question: "",
+                    answer: "",
+                  }}
+                  header="Questions & Answers"
+                />
+                {errors.questions && (
+                  <span className="text-sm font-medium text-destructive">
+                    {errors.questions.message}
+                  </span>
+                )}
+              </div>
+
               {/* Is On Sale */}
               <div className="flex border rounded-md">
                 <FormField
@@ -639,24 +720,28 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                   )}
                 />
                 {/* Sale End Date */}
-                <FormField
-                  control={form.control}
-                  name="saleEndDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 p-4">
-                      <FormControl>
-                        <DateTimePicker
-                          onChange={(date) => {
-                            field.onChange(
-                              date ? format(date, "yyyy-MM-dd'T'HH:mm:ss") : ""
-                            );
-                          }}
-                          value={field.value ? new Date(field.value) : null}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                {form.getValues().isSale && (
+                  <FormField
+                    control={form.control}
+                    name="saleEndDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 p-4">
+                        <FormControl>
+                          <DateTimePicker
+                            onChange={(date) => {
+                              field.onChange(
+                                date
+                                  ? format(date, "yyyy-MM-dd'T'HH:mm:ss")
+                                  : ""
+                              );
+                            }}
+                            value={field.value ? new Date(field.value) : null}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
               {/*Submit button */}
