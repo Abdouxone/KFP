@@ -12,7 +12,7 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
       <Header />
       <CategoriesHeader />
       <div>{children}</div>
-      <div className="h-[400px]"></div>
+      <div className="h-[470px]"></div>
       <Footer />
     </div>
   );

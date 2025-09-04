@@ -1,9 +1,22 @@
+import { SubCategory } from "@/generated/prisma";
 import Link from "next/link";
 
-export default function Links() {
+export default function Links({ subs }: { subs: SubCategory[] }) {
   return (
     <div className="grid md:grid-cols-3 gap-4 mt-5 text-sm">
       {/* Random SubCategories */}
+      <div className="space-y-4">
+        <h1 className="text-lg font-bold">Find it Fast</h1>
+        <ul className="flex flex-col gap-y-1">
+          {subs.map((sub) => (
+            <Link key={sub.id} href={`/browse?subCategory=${sub.url}`}>
+              <li>
+                <span>{sub.name}</span>
+              </li>
+            </Link>
+          ))}
+        </ul>
+      </div>
       {/* Profile Links */}
       <div className="space-y-4 md:mt-10">
         <ul className="flex flex-col gap-y-1">
