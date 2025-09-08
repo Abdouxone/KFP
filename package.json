@@ -60,6 +60,8 @@
     "react-day-picker": "^9.8.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.61.1",
+    "react-hot-toast": "^2.6.0",
+    "react-image-zooom": "^1.5.5",
     "react-rating-stars-component": "^2.2.0",
     "react-resizable-panels": "^3.0.3",
     "react-stars": "^2.2.5",

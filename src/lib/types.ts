@@ -1,5 +1,10 @@
 import { Prisma, ProductVariantImage, Size } from "@/generated/prisma";
-import { getAllStoreProducts, getProducts } from "@/queries/product";
+import {
+  getAllStoreProducts,
+  getProductPageData,
+  getProducts,
+  retrieveProductDetails,
+} from "@/queries/product";
 import { getAllSubCategories } from "@/queries/Subcategory";
 
 export interface DashboardSidebarMenuInterface {
@@ -61,3 +66,11 @@ export type VariantImageType = {
   url: string;
   image: string;
 };
+
+export type ProductPageType = Prisma.PromiseReturnType<
+  typeof retrieveProductDetails
+>;
+
+export type ProductPageDataType = Prisma.PromiseReturnType<
+  typeof getProductPageData
+>;

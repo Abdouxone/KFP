@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 // Types
 import {
+  ProductPageType,
   ProductWithVariantType,
   VariantImageType,
   VariantSimplified,
@@ -394,5 +395,126 @@ export const getProducts = async (
     currentPage,
     pageSize,
     totalCount,
+  };
+};
+
+// function: getProductPageData
+// Description: Retrieves details of a specific product variant from the database.
+// Access Level: Public
+// Parameters:
+// - productSlug: The slug of the product to which the variant belongs.
+// - variantSlug: The slug of the variant to be retrieved.
+// returns: Details of the requested product variant.
+
+export const getProductPageData = async (
+  productSlug: string,
+  variantSlug: string
+) => {
+  // Retrieve the product vatiant details from the database
+  const product = await retrieveProductDetails(productSlug, variantSlug);
+
+  if (!product) return null;
+
+  return formatProductResponse(product);
+};
+
+// Helper functions
+export const retrieveProductDetails = async (
+  productSlug: string,
+  variantSlug: string
+) => {
+  const product = await db.product.findUnique({
+    where: {
+      slug: productSlug,
+    },
+    include: {
+      category: true,
+      subCategory: true,
+      store: true,
+      specs: true,
+      questions: true,
+      variants: {
+        where: {
+          slug: variantSlug,
+        },
+        include: {
+          images: true,
+          colors: true,
+          sizes: true,
+          specs: true,
+        },
+      },
+    },
+  });
+
+  // Get variant Image
+  if (!product) return null;
+  const variantImages = await db.productVariant.findMany({
+    where: {
+      productId: product.id,
+    },
+    select: {
+      slug: true,
+      variantImage: true,
+    },
+  });
+
+  return {
+    ...product,
+    variantImages: variantImages.map((v) => ({
+      url: `/product/${product.slug}/${v.slug}`,
+      img: v.variantImage,
+      slug: v.slug,
+    })),
+  };
+};
+
+const formatProductResponse = (product: ProductPageType) => {
+  if (!product) return;
+  const variant = product?.variants[0];
+  const { store, category, subCategory, questions } = product;
+  const { colors, sizes } = variant;
+
+  return {
+    productId: product.id,
+    variantId: variant.id,
+    productSlug: product.slug,
+    variantSlug: variant.slug,
+    name: product.name,
+    description: product.description,
+    variantName: variant.variantName,
+    variantDescription: variant.variantDescription,
+    images: variant.images,
+    category,
+    subCategory,
+    isSale: variant.isSale,
+    saleEndDate: variant.saleEndDate,
+    brand: product.brand,
+    sku: variant.sku,
+    store: {
+      id: store.id,
+      url: store.url,
+      name: store.name,
+      logo: store.logo,
+      followersCount: 10,
+      isUserFollowingStore: true,
+    },
+    colors,
+    sizes,
+    specs: {
+      product: product.specs,
+      variant: variant.specs,
+    },
+    questions,
+    rating: product.rating,
+    reviews: [],
+    numReviews: 122,
+    reviewsStatistics: {
+      ratingStatistics: [],
+      reviewsWithImagesCount: 5,
+    },
+    shipingDetails: {},
+    relatedProduct: [],
+    variantImages: product.variantImages,
   };
 };
