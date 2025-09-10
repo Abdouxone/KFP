@@ -1,7 +1,9 @@
 // React Next.js
+import { CartProductType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { se } from "date-fns/locale";
 import { usePathname, useRouter } from "next/navigation";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { check, size } from "zod";
 
 interface SimplifiedSize {
@@ -16,9 +18,10 @@ interface Props {
   sizeId?: string | undefined;
   sizes: SimplifiedSize[];
   isCard?: boolean;
+  handleChange: (property: keyof CartProductType, value: any) => void;
 }
 
-const ProductPrice: FC<Props> = ({ sizeId, sizes, isCard }) => {
+const ProductPrice: FC<Props> = ({ sizeId, sizes, isCard, handleChange }) => {
   // Check if the sizes array is either undefined or empty
   if (!sizes || sizes.length === 0) {
     // If no sizes are available, simply return from the function, performing
@@ -91,6 +94,12 @@ const ProductPrice: FC<Props> = ({ sizeId, sizes, isCard }) => {
 
   const discountedPrice =
     selectedSize.price * (1 - (selectedSize.discount || 0) / 100);
+
+  // Update product to be added to cart with price and stock quantity
+  useEffect(() => {
+    handleChange("price", discountedPrice);
+    handleChange("stock", selectedSize.quantity);
+  }, [sizeId]);
 
   return (
     <div>

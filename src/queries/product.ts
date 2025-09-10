@@ -491,6 +491,7 @@ const formatProductResponse = (product: ProductPageType) => {
     saleEndDate: variant.saleEndDate,
     brand: product.brand,
     sku: variant.sku,
+    variantImage: variant.variantImage,
     store: {
       id: store.id,
       url: store.url,

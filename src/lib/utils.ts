@@ -10,6 +10,7 @@ import { twMerge } from "tailwind-merge";
 
 //DB
 import { db } from "./db";
+import { CartProductType } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -83,4 +84,45 @@ export const generateUniqueSlug = async (
     suffix += 1;
   }
   return slug;
+};
+
+// Function to validate the product data before adding it to the cart
+export const isProductValidToAdd = (product: CartProductType): boolean => {
+  // Check that all required fields are filled
+  const {
+    productId,
+    variantId,
+    productSlug,
+    variantSlug,
+    name,
+    variantName,
+    image,
+    quantity,
+    price,
+    sizeId,
+    size,
+    stock,
+    variantImage,
+  } = product;
+
+  // Ensure that all necessary fields have values
+  if (
+    !productId ||
+    !variantId ||
+    !productSlug ||
+    !variantSlug ||
+    !name ||
+    !variantName ||
+    !image ||
+    quantity <= 0 ||
+    price <= 0 ||
+    !sizeId || // Ensure sizeId is not empty
+    !size || // Ensure size is not empty
+    stock <= 0 ||
+    !variantImage // Ensure variantImage is not empty
+  ) {
+    return false; // Validation failed
+  }
+
+  return true; // Product is valid
 };

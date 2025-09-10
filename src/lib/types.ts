@@ -6,6 +6,9 @@ import {
   retrieveProductDetails,
 } from "@/queries/product";
 import { getAllSubCategories } from "@/queries/Subcategory";
+import { Variable } from "lucide-react";
+import { StringValidation } from "zod/v3";
+import { StringFormatParams } from "zod/v4/core";
 
 export interface DashboardSidebarMenuInterface {
   label: string;
@@ -74,3 +77,19 @@ export type ProductPageType = Prisma.PromiseReturnType<
 export type ProductPageDataType = Prisma.PromiseReturnType<
   typeof getProductPageData
 >;
+
+export type CartProductType = {
+  productId: string;
+  variantId: string;
+  productSlug: string;
+  variantSlug: string;
+  name: string;
+  variantName: string;
+  image: string;
+  variantImage: String;
+  sizeId: string;
+  size: string;
+  quantituy: number;
+  price: number;
+  stock: number;
+};

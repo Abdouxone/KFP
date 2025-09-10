@@ -1,5 +1,5 @@
 "use client";
-import { ProductPageDataType } from "@/lib/types";
+import { CartProductType, ProductPageDataType } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 // React
@@ -12,14 +12,21 @@ import { Separator } from "@/components/ui/separator";
 import ColorWheel from "@/components/shared/color-wheel";
 import ProductVariantSelector from "./variant-selector";
 import SizeSelector from "./size-selector";
+import ProductAssurancePolicy from "./assurance-policy";
 
 interface Props {
   productData: ProductPageDataType;
   quantity?: number;
   sizeId: string | undefined;
+  handleChange: (property: keyof CartProductType, value: any) => void;
 }
 
-const ProductInfo: FC<Props> = ({ productData, quantity, sizeId }) => {
+const ProductInfo: FC<Props> = ({
+  productData,
+  quantity,
+  sizeId,
+  handleChange,
+}) => {
   // Check if productData exists, return null if it's missing (prevents rendering)
   if (!productData) return null;
 
@@ -109,7 +116,11 @@ const ProductInfo: FC<Props> = ({ productData, quantity, sizeId }) => {
       </div>
       {/* price */}
       <div className="my-2 relative flex flex-col sm:flex-row justify-between">
-        <ProductPrice sizeId={sizeId} sizes={sizes} />
+        <ProductPrice
+          sizeId={sizeId}
+          sizes={sizes}
+          handleChange={handleChange}
+        />
       </div>
       {/* Colors Wheel - Variant Switcher */}
       <Separator className="mt-2" />
@@ -121,20 +132,29 @@ const ProductInfo: FC<Props> = ({ productData, quantity, sizeId }) => {
           </span>
         </div>
         {/* Variant Switcher */}
-        {variantImages.length > 0 && (
-          <ProductVariantSelector
-            variants={variantImages}
-            slug={productData.variantSlug}
-          />
-        )}
+        <div className="mt-4">
+          {variantImages.length > 0 && (
+            <ProductVariantSelector
+              variants={variantImages}
+              slug={productData.variantSlug}
+            />
+          )}
+        </div>
       </div>
       {/* Size Selector */}
       <div className="space-y-2 pb-2 mt-4">
         <div>
           <h1 className="text-main-primary font-bold">Size</h1>
         </div>
-        <SizeSelector sizes={sizes} sizeId={sizeId} />
+        <SizeSelector
+          sizes={sizes}
+          sizeId={sizeId}
+          handleChange={handleChange}
+        />
       </div>
+      {/* Product assurance */}
+      <Separator className="mt-2" />
+      <ProductAssurancePolicy />
     </div>
   );
 };
