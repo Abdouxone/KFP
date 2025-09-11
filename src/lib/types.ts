@@ -89,7 +89,7 @@ export type CartProductType = {
   variantImage: String;
   sizeId: string;
   size: string;
-  quantituy: number;
+  quantity: number;
   price: number;
   stock: number;
 };

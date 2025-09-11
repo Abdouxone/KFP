@@ -3,7 +3,10 @@ import { CartProductType, ProductPageDataType } from "@/lib/types";
 import { FC, ReactNode, useEffect, useState } from "react";
 import ProductSwiper from "./product-swiper";
 import ProductInfo from "./product-info/product-info";
-import { isProductValidToAdd } from "@/lib/utils";
+import { cn, isProductValidToAdd } from "@/lib/utils";
+import QuantitySelector from "./quantity-selector";
+import SocialShare from "../shared/social-share";
+import ReturnPrivacySecurityCard from "./returns-security-privacy-card";
 
 interface Props {
   productData: ProductPageDataType;
@@ -14,7 +17,7 @@ interface Props {
 const ProductPageContainer: FC<Props> = ({ productData, sizeId, children }) => {
   // If there is no product data available, render nothing (null)
   if (!productData) return null;
-  const { images } = productData;
+  const { images, sizes } = productData;
 
   // Initialize the default product data for the cart item
   const data: CartProductType = {
@@ -53,7 +56,11 @@ const ProductPageContainer: FC<Props> = ({ productData, sizeId, children }) => {
     setIsProductValid(check);
   }, [productToBeAddedToCart]);
 
-  console.log("productToBeAddedToCart ====>", productToBeAddedToCart);
+  console.log(
+    "qty, stock ====>",
+    productToBeAddedToCart.stock,
+    productToBeAddedToCart.quantity
+  );
 
   return (
     <div className="relative">
@@ -67,7 +74,55 @@ const ProductPageContainer: FC<Props> = ({ productData, sizeId, children }) => {
             sizeId={sizeId}
             handleChange={handleChange}
           />
-          {/* Buy actions card */}
+          {/* Buy actions button */}
+
+          <div className="w-[390px]">
+            <div className="z-20">
+              <div className="bg-white border rounded-md overflow-hidden overflow-y-auto p-4 pb-0 ">
+                {/* actions buttons */}
+
+                <div className="mt-5 bg-white bottom-0 pb-4 space-y-3 sticky">
+                  {/* Return Privacy Security Card */}
+                  <ReturnPrivacySecurityCard loading />
+
+                  {/* Quantity Selector */}
+                  {sizeId && (
+                    <div className="w-full flex justify-end mt-4">
+                      <QuantitySelector
+                        productId={productToBeAddedToCart.productId}
+                        variantId={productToBeAddedToCart.variantId}
+                        sizeId={productToBeAddedToCart.sizeId}
+                        quantity={productToBeAddedToCart.quantity}
+                        stock={productToBeAddedToCart.stock}
+                        handleChange={handleChange}
+                        sizes={sizes}
+                      />
+                    </div>
+                  )}
+                  {/* Action buttons */}
+                  <button className="relative w-full py-2.5 min-w-20 bg-orange-background hover:bg-orange-hover text-white h-11 rounded-3xl leading-6 inline-block font-bold whitespace-nowrap border border-orange-border cursor-pointer transition-all duration-300 ease-bezier-1 select-none ">
+                    <span>Buy now</span>
+                  </button>
+                  <button
+                    disabled={!isProductValid}
+                    className={cn(
+                      "relative w-full py-2.5 min-w-20 bg-orange-border hover:bg-[#e4cdce] text-orange-hover h-11 rounded-3xl leading-6 inline-block font-bold whitespace-nowrap border border-orange-border cursor-pointer transition-all duration-300 ease-bezier-1 select-none",
+                      {
+                        "cursor-not-allowed": !isProductValid,
+                      }
+                    )}
+                  >
+                    <span>Add to cart</span>
+                  </button>
+                  {/* Share to socials */}
+                  <SocialShare
+                    url={`/product/${productData.productSlug}/${productData.variantSlug}`}
+                    quote={`${productData.name} · ${productData.variantName}`}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div className="w-[calc(100%-390px)] mt-6 pb-16 ">{children}</div>

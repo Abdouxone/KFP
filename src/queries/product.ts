@@ -328,6 +328,32 @@ export const getProducts = async (
     AND: [],
   };
 
+  // Apply category filter (using category URL)
+  if (filters.category) {
+    const category = await db.category.findUnique({
+      where: {
+        url: filters.category,
+      },
+      select: { id: true },
+    });
+    if (category) {
+      wherClause.AND.push({ categoryId: category.id });
+    }
+  }
+
+  // Apply subCategory filter (using subCategory URL)
+  if (filters.subCategory) {
+    const subCategory = await db.subCategory.findUnique({
+      where: {
+        url: filters.subCategory,
+      },
+      select: { id: true },
+    });
+    if (subCategory) {
+      wherClause.AND.push({ subCategoryId: subCategory.id });
+    }
+  }
+
   // Get all filtered, sorted products
   const products = await db.product.findMany({
     where: wherClause,
