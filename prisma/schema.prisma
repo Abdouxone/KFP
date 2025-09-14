@@ -31,7 +31,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  stores Store[] @relation("UserStores")
+  stores  Store[]  @relation("UserStores")
+  reviews Review[] @relation("ReviewToUser")
 }
 
 model Category {
@@ -127,6 +128,8 @@ model Product {
   subCategory   SubCategory @relation("SubCategoryToProduct", fields: [subCategoryId], references: [id])
 
   questions Question[] @relation("ProductQuestion")
+
+  reviews Review[] @relation("ReviewToProduct")
 
   @@index([storeId])
   @@index([categoryId])
@@ -230,5 +233,44 @@ model Question {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
+  @@index([productId])
+}
+
+model ReviewImage {
+  id  String @id @default(uuid())
+  url String
+  alt String @default("")
+
+  reviewId String
+  review   Review @relation("ReviewToReviewImage", fields: [reviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([reviewId])
+}
+
+model Review {
+  id       String @id @default(uuid())
+  variant  String
+  review   String
+  rating   Float
+  color    String
+  size     String
+  quantity String
+  likes    Int    @default(0)
+
+  images ReviewImage[] @relation("ReviewToReviewImage")
+
+  userId String
+  user   User   @relation("ReviewToUser", fields: [userId], references: [id])
+
+  productId String
+  product   Product @relation("ReviewToProduct", fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([userId])
   @@index([productId])
 }

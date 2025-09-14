@@ -341,6 +341,19 @@ export const getProducts = async (
     }
   }
 
+  // Apply store filter (using store URL)
+  if (filters.store) {
+    const store = await db.store.findUnique({
+      where: {
+        url: filters.store,
+      },
+      select: { id: true },
+    });
+    if (store) {
+      wherClause.AND.push({ storeId: store.id });
+    }
+  }
+
   // Apply subCategory filter (using subCategory URL)
   if (filters.subCategory) {
     const subCategory = await db.subCategory.findUnique({
