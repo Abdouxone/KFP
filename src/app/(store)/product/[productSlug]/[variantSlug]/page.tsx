@@ -68,7 +68,7 @@ export default async function ProductVariantPage({
               <RelatedProducts products={relatedProducts.products} />
             </>
           )}
-          <Separator className="mt-6" />
+          {/* <Separator className="mt-6" /> */}
           {/* Product Reviews */}
           <>
             <Separator className="mt-6" />

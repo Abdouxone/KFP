@@ -3,7 +3,7 @@ import { CartProductType, ProductPageDataType } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 // React
-import React, { FC } from "react";
+import React, { Dispatch, FC, SetStateAction } from "react";
 import { CopyIcon } from "../../icons";
 import { toast } from "react-hot-toast";
 import { ReactStars } from "new-react-stars";
@@ -13,12 +13,15 @@ import ColorWheel from "@/components/shared/color-wheel";
 import ProductVariantSelector from "./variant-selector";
 import SizeSelector from "./size-selector";
 import ProductAssurancePolicy from "./assurance-policy";
+import { ProductVariantImage } from "@/generated/prisma";
 
 interface Props {
   productData: ProductPageDataType;
   quantity?: number;
   sizeId: string | undefined;
   handleChange: (property: keyof CartProductType, value: any) => void;
+  setVariantImages: Dispatch<SetStateAction<ProductVariantImage[]>>;
+  setActiveImage: Dispatch<SetStateAction<ProductVariantImage | null>>;
 }
 
 const ProductInfo: FC<Props> = ({
@@ -26,6 +29,8 @@ const ProductInfo: FC<Props> = ({
   quantity,
   sizeId,
   handleChange,
+  setVariantImages,
+  setActiveImage,
 }) => {
   // Check if productData exists, return null if it's missing (prevents rendering)
   if (!productData) return null;
@@ -36,7 +41,7 @@ const ProductInfo: FC<Props> = ({
     name,
     sku,
     colors,
-    variantImages,
+    variantInfo,
     sizes,
     isSale,
     saleEndDate,
@@ -95,6 +100,7 @@ const ProductInfo: FC<Props> = ({
         </div>
         <div className="ml-4 flex items-center gap-x-2 flex-1 whitespace-nowrap">
           <ReactStars
+            className="hidden"
             count={5}
             size={24}
             color1="#F5F5F5"
@@ -103,7 +109,10 @@ const ProductInfo: FC<Props> = ({
             half
             edit={false}
           />
-          <Link href="#reviews" className="text-[#ffd804] hover:underline">
+          <Link
+            href="#reviews"
+            className="text-[#ffd804] hover:underline hidden"
+          >
             (
             {numReviews === 0
               ? "No review yet"
@@ -133,10 +142,12 @@ const ProductInfo: FC<Props> = ({
         </div>
         {/* Variant Switcher */}
         <div className="mt-4">
-          {variantImages.length > 0 && (
+          {variantInfo.length > 0 && (
             <ProductVariantSelector
-              variants={variantImages}
+              variants={variantInfo}
               slug={productData.variantSlug}
+              setVariantImages={setVariantImages}
+              setActiveImage={setActiveImage}
             />
           )}
         </div>

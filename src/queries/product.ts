@@ -486,24 +486,34 @@ export const retrieveProductDetails = async (
     },
   });
 
-  // Get variant Image
+  // Get variant Info
   if (!product) return null;
-  const variantImages = await db.productVariant.findMany({
+  const variantInfo = await db.productVariant.findMany({
     where: {
       productId: product.id,
     },
-    select: {
-      slug: true,
-      variantImage: true,
+    include: {
+      images: true,
+      sizes: true,
+      colors: true,
+      product: {
+        select: {
+          slug: true,
+        },
+      },
     },
   });
 
   return {
     ...product,
-    variantImages: variantImages.map((v) => ({
-      url: `/product/${product.slug}/${v.slug}`,
-      img: v.variantImage,
-      slug: v.slug,
+    variantInfo: variantInfo.map((variant) => ({
+      variantName: variant.variantName,
+      variantSlug: variant.slug,
+      variantImage: variant.variantImage,
+      variantUrl: `/product/${product.slug}/${variant.slug}`,
+      images: variant.images,
+      sizes: variant.sizes,
+      colors: variant.colors.map((color) => color.name).join(", "),
     })),
   };
 };
@@ -555,6 +565,6 @@ const formatProductResponse = (product: ProductPageType) => {
     },
     shipingDetails: {},
     relatedProduct: [],
-    variantImages: product.variantImages,
+    variantInfo: product.variantInfo,
   };
 };

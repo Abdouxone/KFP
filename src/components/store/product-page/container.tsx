@@ -7,6 +7,7 @@ import { cn, isProductValidToAdd } from "@/lib/utils";
 import QuantitySelector from "./quantity-selector";
 import SocialShare from "../shared/social-share";
 import ReturnPrivacySecurityCard from "./returns-security-privacy-card";
+import { ProductVariantImage } from "@/generated/prisma";
 
 interface Props {
   productData: ProductPageDataType;
@@ -18,6 +19,15 @@ const ProductPageContainer: FC<Props> = ({ productData, sizeId, children }) => {
   // If there is no product data available, render nothing (null)
   if (!productData) return null;
   const { images, sizes } = productData;
+
+  // State for Temporary product images
+  const [variantImages, setVariantImages] =
+    useState<ProductVariantImage[]>(images);
+
+  // useState hook to manage the active image being displayed, initialized to the first image in the array
+  const [activeImage, setActiveImage] = useState<ProductVariantImage | null>(
+    images[0]
+  );
 
   // Initialize the default product data for the cart item
   const data: CartProductType = {
@@ -56,23 +66,23 @@ const ProductPageContainer: FC<Props> = ({ productData, sizeId, children }) => {
     setIsProductValid(check);
   }, [productToBeAddedToCart]);
 
-  console.log(
-    "qty, stock ====>",
-    productToBeAddedToCart.stock,
-    productToBeAddedToCart.quantity
-  );
-
   return (
     <div className="relative">
       <div className="w-full xl:flex xl:gap-4">
         {/* Product images Swiper */}
-        <ProductSwiper images={images} />
+        <ProductSwiper
+          images={variantImages.length > 0 ? variantImages : images}
+          activeImage={activeImage || images[0]}
+          setActiveImage={setActiveImage}
+        />
         <div className="w-full mt-4 md:mt-0 flex flex-col gap-4 md:flex-row ">
           {/* Product Main Info */}
           <ProductInfo
             productData={productData}
             sizeId={sizeId}
             handleChange={handleChange}
+            setVariantImages={setVariantImages}
+            setActiveImage={setActiveImage}
           />
           {/* Buy actions button */}
 

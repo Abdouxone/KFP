@@ -29,7 +29,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
             </div>
             {/* Rating */}
             {product.rating !== 0 && (
-              <div className="flex items-center gap-x-1 h-5">
+              <div className=" items-center gap-x-1 h-5 hidden">
                 <ReactStars
                   count={5}
                   size={24}
