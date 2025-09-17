@@ -1,5 +1,6 @@
 // Types
 import { CartProductType } from "@/lib/types";
+import { ItemIndicator } from "@radix-ui/react-dropdown-menu";
 import { totalmem } from "os";
 
 // zustand
@@ -17,7 +18,7 @@ interface State {
 interface Actions {
   addToCart: (Item: CartProductType) => void;
   updateProductQuantity: (product: CartProductType, quantity: number) => void; // New quantity update action
-  removeMultipleFromCart: (items: CartProductType[], quantity: number) => void; // Multiple product removal
+  removeMultipleFromCart: (items: CartProductType[]) => void; // Multiple product removal
   removeFromCart: (Item: CartProductType) => void; // Single product removal
   emptyCart: () => void;
 }
@@ -72,14 +73,75 @@ export const useCartStore = create(
           }));
         }
       },
-      updateProductQuantity: () => {},
-      removeMultipleFromCart: () => {},
-      removeFromCart: () => {},
-      emptyCart: () => {},
+      updateProductQuantity: (product: CartProductType, quantity: number) => {
+        const cart = get().cart;
+
+        // If quantity is 0 or less, remove the item
+        if (quantity <= 0) {
+          get().removeFromCart(product);
+          return;
+        }
+
+        const updatedCart = cart.map((item) =>
+          item.productId === product.productId &&
+          item.variantId === product.variantId &&
+          item.sizeId === product.sizeId
+            ? { ...item, quantity: quantity }
+            : item
+        );
+
+        const totalItems = updatedCart.length;
+        const totalPrice = updatedCart.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+        set(() => ({
+          cart: updatedCart,
+          totalItems,
+          totalPrice,
+        }));
+      },
+      removeFromCart: (product: CartProductType) => {
+        const cart = get().cart;
+        const updatedCart = cart.filter(
+          (item) =>
+            !(
+              item.productId === product.productId &&
+              item.variantId === product.variantId &&
+              item.sizeId === product.sizeId
+            )
+        );
+        const totalItems = updatedCart.length;
+        const totalPrice = updatedCart.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+        set(() => ({
+          cart: updatedCart,
+          totalItems,
+          totalPrice,
+        }));
+      },
+
+      // remove multiple from cart
+      removeMultipleFromCart: (products: CartProductType[]) => {
+        products.forEach((product) => {
+          get().removeFromCart(product);
+        });
+      },
+
+      // Empty all cart
+      emptyCart: () => {
+        set(() => ({
+          cart: [],
+          totalItems: 0,
+          totalPrice: 0,
+        }));
+      },
     }),
 
     {
-      name: "cart-storage",
+      name: "cart",
     }
   )
 );

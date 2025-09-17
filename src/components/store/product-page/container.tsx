@@ -1,6 +1,6 @@
 "use client";
 import { CartProductType, ProductPageDataType } from "@/lib/types";
-import { FC, ReactNode, useEffect, useState } from "react";
+import { FC, ReactNode, useEffect, useMemo, useState } from "react";
 import ProductSwiper from "./product-swiper";
 import ProductInfo from "./product-info/product-info";
 import { cn, isProductValidToAdd } from "@/lib/utils";
@@ -8,6 +8,9 @@ import QuantitySelector from "./quantity-selector";
 import SocialShare from "../shared/social-share";
 import ReturnPrivacySecurityCard from "./returns-security-privacy-card";
 import { ProductVariantImage } from "@/generated/prisma";
+import { useCartStore } from "@/cart-store/useCartStore";
+import toast from "react-hot-toast";
+import useFromStore from "@/hooks/useFromStore";
 
 interface Props {
   productData: ProductPageDataType;
@@ -18,7 +21,7 @@ interface Props {
 const ProductPageContainer: FC<Props> = ({ productData, sizeId, children }) => {
   // If there is no product data available, render nothing (null)
   if (!productData) return null;
-  const { images, sizes } = productData;
+  const { images, sizes, productId, variantId } = productData;
 
   // State for Temporary product images
   const [variantImages, setVariantImages] =
@@ -65,6 +68,30 @@ const ProductPageContainer: FC<Props> = ({ productData, sizeId, children }) => {
     const check = isProductValidToAdd(productToBeAddedToCart);
     setIsProductValid(check);
   }, [productToBeAddedToCart]);
+
+  // Get the store action to add items to cart
+
+  const addToCart = useCartStore((state) => state.addToCart);
+
+  const cartItems = useFromStore(useCartStore, (state) => state.cart);
+  console.log("cart Items", cartItems);
+
+  const handleAddToCart = () => {
+    if (maxQty <= 0) return;
+    addToCart(productToBeAddedToCart);
+    toast.success("Product added to cart successfully.");
+  };
+
+  const { stock } = productToBeAddedToCart;
+  const maxQty = useMemo(() => {
+    const search_product = cartItems?.find(
+      (p) =>
+        p.productId === productId &&
+        p.variantId === variantId &&
+        p.sizeId === sizeId
+    );
+    return search_product ? 10000 - search_product.quantity : 10000;
+  }, [cartItems, productId, variantId, sizeId, stock]);
 
   return (
     <div className="relative">
@@ -118,9 +145,10 @@ const ProductPageContainer: FC<Props> = ({ productData, sizeId, children }) => {
                     className={cn(
                       "relative w-full py-2.5 min-w-20 bg-orange-border hover:bg-[#e4cdce] text-orange-hover h-11 rounded-3xl leading-6 inline-block font-bold whitespace-nowrap border border-orange-border cursor-pointer transition-all duration-300 ease-bezier-1 select-none",
                       {
-                        "cursor-not-allowed": !isProductValid,
+                        "cursor-not-allowed": !isProductValid || maxQty <= 0,
                       }
                     )}
+                    onClick={() => handleAddToCart()}
                   >
                     <span>Add to cart</span>
                   </button>

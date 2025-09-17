@@ -1,8 +1,10 @@
 //Types
+import { useCartStore } from "@/cart-store/useCartStore";
 import { Size } from "@/generated/prisma";
+import useFromStore from "@/hooks/useFromStore";
 import { CartProductType } from "@/lib/types";
 import { Dice1, Minus, Plus } from "lucide-react";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 
 interface QuantitySelectorProps {
   productId: string;
@@ -27,14 +29,27 @@ const QuantitySelector: FC<QuantitySelectorProps> = ({
     return null;
   }
 
+  // Get cart product if it exist in cart, the get added quantity
+  const cart = useFromStore(useCartStore, (state) => state.cart);
+
   // UseEffect hook to handle changes when sizeId updates
   useEffect(() => {
     handleChange("quantity", 1);
   }, [sizeId]);
 
+  const maxQty = useMemo(() => {
+    const search_product = cart?.find(
+      (p) =>
+        p.productId === productId &&
+        p.variantId === variantId &&
+        p.sizeId === sizeId
+    );
+    return search_product ? 10000 - search_product.quantity : 10000;
+  }, [cart, productId, variantId, sizeId, stock]);
+
   // Function to handle incresing the quantity of the product
   const handleIncrease = () => {
-    if (quantity < 1000) {
+    if (quantity < maxQty) {
       handleChange("quantity", quantity + 1);
     }
   };
@@ -51,7 +66,7 @@ const QuantitySelector: FC<QuantitySelectorProps> = ({
 
     if (isNaN(value)) value = 1;
     if (value < 1) value = 1;
-    if (value > 1000) value = 1000;
+    if (value > maxQty) value = maxQty;
 
     handleChange("quantity", value);
   };
@@ -61,11 +76,18 @@ const QuantitySelector: FC<QuantitySelectorProps> = ({
       <div className="w-full flex justify-between items-center gap-x-5">
         <div className="grow">
           <span className="block text-xs text-gray-500">Select quantity</span>
+          <span className="block text-xs text-gray-500">
+            {maxQty !== 10000 &&
+              `(You already have ${
+                10000 - maxQty
+              } pieces of this product in cart)`}
+          </span>
           <input
             type="number"
             className="w-full p-0 bg-transparent border-0 focus:outline-0 text-gray-800 no-arrows"
             min={1}
-            value={quantity}
+            value={maxQty <= 0 ? 0 : quantity}
+            max={maxQty}
             onChange={handleInputChange}
           />
         </div>
@@ -80,7 +102,7 @@ const QuantitySelector: FC<QuantitySelectorProps> = ({
           <button
             className="size-6 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-full border border-gray-200 bg-white shadow-sm focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
             onClick={handleIncrease}
-            disabled={quantity === 1000}
+            disabled={quantity === maxQty}
           >
             <Plus className="w-3" />
           </button>
