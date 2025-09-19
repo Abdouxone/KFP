@@ -66,6 +66,7 @@
     "react-image-zooom": "^1.5.5",
     "react-rating-stars-component": "^2.2.0",
     "react-resizable-panels": "^3.0.3",
+    "react-spinners": "^0.17.0",
     "react-stars": "^2.2.5",
     "react-tag-input": "^6.10.6",
     "recharts": "2.15.4",
