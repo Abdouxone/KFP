@@ -1,4 +1,12 @@
-import { Prisma, ProductVariantImage, Size } from "@/generated/prisma";
+import {
+  Cart,
+  CartItem,
+  Prisma,
+  ProductVariantImage,
+  ShippingAddress,
+  Size,
+  Willaya,
+} from "@/generated/prisma";
 import {
   getAllStoreProducts,
   getProductPageData,
@@ -102,4 +110,12 @@ export type VariantInfoType = {
   images: ProductVariantImage[];
   sizes: Size[];
   colors: string;
+};
+
+export type CartWithCartItemsType = Cart & {
+  cartItems: CartItem[];
+};
+
+export type userShippingAddressType = ShippingAddress & {
+  willaya: Willaya;
 };

@@ -28,13 +28,17 @@ model User {
   picture String @db.Text
   role    Role   @default(USER)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
 
   stores  Store[]  @relation("UserStores")
   // reviews Review[] @relation("ReviewToUser")
 
+  shippingAddresses ShippingAddress[] @relation("UserShippingAddresses")
+
   cart Cart? @relation("UserCart")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Category {
@@ -323,4 +327,59 @@ model CartItem {
 
   @@index([cartId])
   @@index([storeId])
+}
+
+
+model Willaya {
+  id   String @id @default(uuid())
+  name String @unique
+  code String @unique
+
+  ShippingAddresses ShippingAddress[] @relation("WillayaToShippingAddress")
+  
+
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model city {
+  id   String @id @default(uuid())
+  name String @unique
+  code String @unique
+
+
+
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+}
+
+
+
+
+model ShippingAddress {
+  id          String @id @default(uuid())
+  firstName String
+  lastName String
+  phone String
+  address1 String
+  city String
+  default Boolean @default(false)
+
+  userId String
+  user User @relation("UserShippingAddresses",fields: [userId],references: [id],onDelete: Cascade)
+
+  willayaId String
+  willaya Willaya @relation("WillayaToShippingAddress", fields: [willayaId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+
+@@index([willayaId])
+@@index([userId])
 }

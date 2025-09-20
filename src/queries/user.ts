@@ -86,8 +86,7 @@ export const saveUserCart = async (
       const size = variant.sizes[0];
 
       // Validate stock and price
-      // const validQuantity = Math.min(quantity, size.quantity);
-      const validQuantity = quantity;
+      const validQuantity = Math.min(quantity, 10001);
 
       const price = size.discount
         ? size.price - size.price * (size.discount / 100)
@@ -147,4 +146,36 @@ export const saveUserCart = async (
   if (cart) return true;
 
   return false;
+};
+
+// Function: getUserShippingAddresses
+// Description: Retrieves all shipping addresses for a specific user.
+// Permission Level: User who owns the addresses
+// Parameters: None
+// Returns: List of shipping addresses for the user.
+
+export const getUserShippingAddresses = async () => {
+  try {
+    // Get current User
+    const user = await currentUser();
+
+    // Ensure user is authenticated
+    if (!user) throw new Error("Unauthenticated.");
+
+    // Retrieve all shipping addresses for the specified user
+    const shippingAddresses = await db.shippingAddress.findMany({
+      where: {
+        userId: user.id,
+      },
+      include: {
+        willaya: true,
+      },
+    });
+
+    return shippingAddresses;
+  } catch (error) {
+    // Log and re-throw any errors
+    console.log(error);
+    throw error;
+  }
 };
