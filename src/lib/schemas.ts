@@ -257,3 +257,34 @@ export const ProductFormSchema = z.object({
   isSale: z.boolean().default(false).optional(),
   saleEndDate: z.string().optional(),
 });
+
+export const ShippingAddressSchema = z.object({
+  willayaId: z.string().nonempty("Willaya is required.").uuid(),
+  firstName: z
+    .string()
+    .min(2, { message: "First name should be at least 2 characters long." })
+    .max(50, { message: "First name cannot exceed 50 characters." })
+    .regex(/^[a-zA-Z]+$/, {
+      message: "No special characters are allowed in name.",
+    }),
+
+  lastName: z
+    .string()
+    .min(2, { message: "Last name should be at least 2 characters long." })
+    .max(50, { message: "Last name cannot exceed 50 characters." })
+    .regex(/^[a-zA-Z]+$/, {
+      message: "No special characters are allowed in name.",
+    }),
+  phone: z
+    .string()
+    .regex(/^\+?\d+$/, { message: "Invalid phone number format." }),
+
+  address1: z
+    .string()
+    .min(5, { message: "Address line 1 should be at least 5 characters long." })
+    .max(100, { message: "Address line 1 cannot exceed 100 characters." }),
+
+  commune: z.string(),
+
+  default: z.boolean().default(false).nonoptional(),
+});

@@ -1,20 +1,24 @@
 "use client";
 // types
 
-import { CartWithCartItemsType, userShippingAddressType } from "@/lib/types";
+import {
+  CartWithCartItemsType,
+  userShippingAddressType,
+  WillayaWithCommunesType,
+} from "@/lib/types";
 
 // react
 import { FC, useState } from "react";
 import UserShippingAddresses from "../shared/shipping-addresses/shipping-addresses";
-import { ShippingAddress } from "@/generated/prisma";
+import { Commune, ShippingAddress, Willaya } from "@/generated/prisma";
 
 interface Props {
   cart: CartWithCartItemsType;
-  countries: string[];
+  willayas: WillayaWithCommunesType[];
   addresses: userShippingAddressType[];
 }
 
-const CheckoutContainer: FC<Props> = ({ cart, countries, addresses }) => {
+const CheckoutContainer: FC<Props> = ({ cart, willayas, addresses }) => {
   const [selectedAddress, setSelectedAddress] =
     useState<ShippingAddress | null>(null);
   return (
@@ -23,7 +27,7 @@ const CheckoutContainer: FC<Props> = ({ cart, countries, addresses }) => {
         {/* UserShippingAddresses */}
         <UserShippingAddresses
           addresses={addresses}
-          countries={countries}
+          willayas={willayas}
           selectedAddress={selectedAddress}
           setSelectedAddress={setSelectedAddress}
         />
@@ -31,7 +35,7 @@ const CheckoutContainer: FC<Props> = ({ cart, countries, addresses }) => {
           <div className="relative">
             {cart.cartItems.map((product) => (
               // CheckoutProductCard
-              <div></div>
+              <div>{product.name}</div>
             ))}
           </div>
         </div>

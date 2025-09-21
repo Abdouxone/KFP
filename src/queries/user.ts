@@ -179,3 +179,34 @@ export const getUserShippingAddresses = async () => {
     throw error;
   }
 };
+
+// Function getWillayaWithCommunes
+
+export const getWillayaWithCommunes = async () => {
+  try {
+    const willayas = await db.willaya.findMany({
+      include: {
+        communes: true,
+      },
+    });
+    return willayas;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+// Function: getAllCommuneForWillaya
+
+export const getAllCommuneForWillaya = async (willayaId: string) => {
+  // Retrive all Communes from database
+  const communes = await db.commune.findMany({
+    where: {
+      willayaId: willayaId,
+    },
+    // orderBy: {
+    //   updatedAt: "desc",
+    // },
+  });
+  return communes;
+};

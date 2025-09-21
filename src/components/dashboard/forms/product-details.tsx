@@ -268,8 +268,8 @@ const ProductDetails: FC<ProductDetailsProps> = ({
     form.setValue("variant_specs", variantSpecs);
   }, [colors, sizes, keywords, productSpecs, variantSpecs, data]);
 
-  console.log("product description===>", form.getValues().description);
-  console.log("variant description===>", form.getValues().variantDescription);
+  // console.log("product description===>", form.getValues().description);
+  // console.log("variant description===>", form.getValues().variantDescription);
 
   console.log("form sizes", form.watch().sizes);
   return (

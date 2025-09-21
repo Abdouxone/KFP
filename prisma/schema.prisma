@@ -28,9 +28,7 @@ model User {
   picture String @db.Text
   role    Role   @default(USER)
 
-
-
-  stores  Store[]  @relation("UserStores")
+  stores Store[] @relation("UserStores")
   // reviews Review[] @relation("ReviewToUser")
 
   shippingAddresses ShippingAddress[] @relation("UserShippingAddresses")
@@ -105,7 +103,7 @@ model Store {
   userId String
   user   User   @relation("UserStores", fields: [userId], references: [id])
 
-  cartItems     CartItem[]     @relation("CartItemToStore")
+  cartItems CartItem[] @relation("CartItemToStore")
 
   products Product[] @relation("StoreToProduct")
 
@@ -315,12 +313,10 @@ model CartItem {
   totalPrice  Float
 
   storeId String
-  store Store  @relation("CartItemToStore", fields: [storeId], references: [id], onDelete: Cascade)
-
+  store   Store  @relation("CartItemToStore", fields: [storeId], references: [id], onDelete: Cascade)
 
   cartId String
   cart   Cart   @relation("CartToCartItem", fields: [cartId], references: [id], onDelete: Cascade)
-
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -329,57 +325,50 @@ model CartItem {
   @@index([storeId])
 }
 
-
 model Willaya {
   id   String @id @default(uuid())
   name String @unique
   code String @unique
 
   ShippingAddresses ShippingAddress[] @relation("WillayaToShippingAddress")
-  
 
-
+  communes Commune[] @relation("CityToWillaya")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-model city {
+model Commune {
   id   String @id @default(uuid())
   name String @unique
-  code String @unique
-
-
-
-
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-}
-
-
-
-
-model ShippingAddress {
-  id          String @id @default(uuid())
-  firstName String
-  lastName String
-  phone String
-  address1 String
-  city String
-  default Boolean @default(false)
-
-  userId String
-  user User @relation("UserShippingAddresses",fields: [userId],references: [id],onDelete: Cascade)
 
   willayaId String
-  willaya Willaya @relation("WillayaToShippingAddress", fields: [willayaId], references: [id], onDelete: Cascade)
+  willaya   Willaya @relation("CityToWillaya", fields: [willayaId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
+  @@index([willayaId])
+}
 
-@@index([willayaId])
-@@index([userId])
+model ShippingAddress {
+  id        String  @id @default(uuid())
+  firstName String
+  lastName  String
+  phone     String
+  address1  String
+  city      String
+  default   Boolean @default(false)
+
+  userId String
+  user   User   @relation("UserShippingAddresses", fields: [userId], references: [id], onDelete: Cascade)
+
+  willayaId String
+  willaya   Willaya @relation("WillayaToShippingAddress", fields: [willayaId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([willayaId])
+  @@index([userId])
 }

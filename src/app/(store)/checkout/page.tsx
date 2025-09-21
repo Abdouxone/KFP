@@ -5,7 +5,10 @@ import { redirect } from "next/navigation";
 // Db
 import { db } from "@/lib/db";
 import CheckoutContainer from "@/components/store/checkout-page/container";
-import { getUserShippingAddresses } from "@/queries/user";
+import {
+  getUserShippingAddresses,
+  getWillayaWithCommunes,
+} from "@/queries/user";
 
 export default async function CheckoutPage() {
   const user = await currentUser();
@@ -26,11 +29,20 @@ export default async function CheckoutPage() {
   // Get user Shipping Addresses
   const addresses = await getUserShippingAddresses();
   // Get list of willays
+  const willayas = await getWillayaWithCommunes();
+
+  // Get list of communes
+  const communes = await db.commune.findMany();
 
   return (
     <div className="bg-[#f4f4f4] min-h-screen">
       <div className="max-w-container mx-auto py-5 px-2">
-        <CheckoutContainer cart={cart} countries={[]} addresses={addresses} />
+        <CheckoutContainer
+          cart={cart}
+          willayas={willayas}
+          addresses={addresses}
+          communes={communes}
+        />
       </div>
     </div>
   );

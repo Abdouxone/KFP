@@ -1,13 +1,14 @@
 // Types
-import { ShippingAddress } from "@/generated/prisma";
-import { userShippingAddressType } from "@/lib/types";
+import { Commune, ShippingAddress, Willaya } from "@/generated/prisma";
+import { userShippingAddressType, WillayaWithCommunesType } from "@/lib/types";
 import { Plus } from "lucide-react";
-import { Modak } from "next/font/google";
+
 import { Dispatch, FC, SetStateAction, useState } from "react";
 import Modal from "../modal";
+import AddressDetails from "./address-details";
 
 interface Props {
-  countries: string[];
+  willayas: WillayaWithCommunesType[];
   addresses: userShippingAddressType[];
   selectedAddress: ShippingAddress | null;
 
@@ -16,7 +17,7 @@ interface Props {
 
 const UserShippingAddresses: FC<Props> = ({
   addresses,
-  countries,
+  willayas,
   selectedAddress,
   setSelectedAddress,
 }) => {
@@ -39,7 +40,7 @@ const UserShippingAddresses: FC<Props> = ({
         {/* Modal */}
         <Modal title="Add new Address" show={show} setShow={setShow}>
           {/* AddressDetail */}
-          <div></div>
+          <AddressDetails willayas={willayas} />
         </Modal>
       </div>
     </div>
