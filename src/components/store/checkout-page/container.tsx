@@ -1,20 +1,16 @@
 "use client";
 // types
 
-import {
-  CartWithCartItemsType,
-  userShippingAddressType,
-  WillayaWithCommunesType,
-} from "@/lib/types";
+import { CartWithCartItemsType, userShippingAddressType } from "@/lib/types";
 
 // react
 import { FC, useState } from "react";
 import UserShippingAddresses from "../shared/shipping-addresses/shipping-addresses";
-import { Commune, ShippingAddress, Willaya } from "@/generated/prisma";
+import { ShippingAddress, Willaya } from "@/generated/prisma";
 
 interface Props {
   cart: CartWithCartItemsType;
-  willayas: WillayaWithCommunesType[];
+  willayas: Willaya[];
   addresses: userShippingAddressType[];
 }
 

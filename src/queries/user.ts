@@ -1,4 +1,5 @@
 "use server";
+import { ShippingAddress } from "@/generated/prisma";
 // Db
 import { db } from "@/lib/db";
 //Types
@@ -6,6 +7,7 @@ import { CartProductType } from "@/lib/types";
 
 // Next js
 import { currentUser } from "@clerk/nextjs/server";
+import { fa } from "zod/v4/locales";
 
 /*
  * Function: saveUserCart
@@ -185,9 +187,9 @@ export const getUserShippingAddresses = async () => {
 export const getWillayaWithCommunes = async () => {
   try {
     const willayas = await db.willaya.findMany({
-      include: {
-        communes: true,
-      },
+      // include: {
+      //   communes: true,
+      // },
     });
     return willayas;
   } catch (error) {
@@ -198,15 +200,90 @@ export const getWillayaWithCommunes = async () => {
 
 // Function: getAllCommuneForWillaya
 
-export const getAllCommuneForWillaya = async (willayaId: string) => {
-  // Retrive all Communes from database
-  const communes = await db.commune.findMany({
-    where: {
-      willayaId: willayaId,
-    },
-    // orderBy: {
-    //   updatedAt: "desc",
-    // },
-  });
-  return communes;
+// export const getAllCommuneForWillaya = async (willayaId: string) => {
+//   // Retrive all Communes from database
+//   const communes = await db.commune.findMany({
+//     where: {
+//       willayaId: willayaId,
+//     },
+//     // orderBy: {
+//     //   updatedAt: "desc",
+//     // },
+//   });
+//   return communes;
+// };
+
+// Function: upsertShippingAddress
+// Description: push shipping address for user to the db
+// Permission Level: User who created the address
+// Parameters: ShippingAddress
+// Returns: none
+
+export const upsertShippingAddress = async (address: ShippingAddress) => {
+  try {
+    // Get current User
+    const user = await currentUser();
+
+    // Ensure user is authenticated
+    if (!user) throw new Error("Unauthenticated.");
+
+    // Ensure address data is provided
+    if (!address) throw new Error("Please provide address data.");
+
+    // Handle making the rest of addresses default flase when we are adding a new default address
+    if (address.default) {
+      const addressDb = await db.shippingAddress.findUnique({
+        where: {
+          id: address.id,
+        },
+      });
+      if (addressDb) {
+        try {
+          await db.shippingAddress.updateMany({
+            where: {
+              userId: user.id,
+              default: true,
+            },
+            data: {
+              default: false,
+            },
+          });
+        } catch (error) {
+          console.error("Error resetting default shupping addresses:", error);
+          throw new Error("Could not reset default shipping addresses");
+        }
+      }
+    }
+
+    // Upsert shipping address into the database
+    const upsertedAddress = await db.shippingAddress.upsert({
+      where: {
+        id: address.id,
+      },
+      update: {
+        firstName: address.firstName,
+        lastName: address.lastName,
+        address1: address.address1,
+        phone: address.phone,
+        willayaId: address.willayaId,
+        default: address.default,
+        userId: user.id,
+      },
+      create: {
+        id: address.id,
+        firstName: address.firstName,
+        lastName: address.lastName,
+        address1: address.address1,
+        phone: address.phone,
+        willayaId: address.willayaId,
+        default: address.default,
+        userId: user.id,
+      },
+    });
+    return upsertedAddress;
+  } catch (error) {
+    // Log and re-throw any errors
+    console.error("Error upserting shipping address:", error);
+    throw error;
+  }
 };

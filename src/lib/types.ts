@@ -1,7 +1,6 @@
 import {
   Cart,
   CartItem,
-  Commune,
   Prisma,
   ProductVariantImage,
   ShippingAddress,
@@ -119,8 +118,4 @@ export type CartWithCartItemsType = Cart & {
 
 export type userShippingAddressType = ShippingAddress & {
   willaya: Willaya;
-};
-
-export type WillayaWithCommunesType = Willaya & {
-  communes: Commune[];
 };

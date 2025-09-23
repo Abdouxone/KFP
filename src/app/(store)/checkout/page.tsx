@@ -31,9 +31,6 @@ export default async function CheckoutPage() {
   // Get list of willays
   const willayas = await getWillayaWithCommunes();
 
-  // Get list of communes
-  const communes = await db.commune.findMany();
-
   return (
     <div className="bg-[#f4f4f4] min-h-screen">
       <div className="max-w-container mx-auto py-5 px-2">
@@ -41,7 +38,6 @@ export default async function CheckoutPage() {
           cart={cart}
           willayas={willayas}
           addresses={addresses}
-          communes={communes}
         />
       </div>
     </div>

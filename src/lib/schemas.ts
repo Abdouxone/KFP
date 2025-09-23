@@ -259,12 +259,12 @@ export const ProductFormSchema = z.object({
 });
 
 export const ShippingAddressSchema = z.object({
-  willayaId: z.string().nonempty("Willaya is required.").uuid(),
+  willayaId: z.string().nonempty("Willaya is required."),
   firstName: z
     .string()
     .min(2, { message: "First name should be at least 2 characters long." })
     .max(50, { message: "First name cannot exceed 50 characters." })
-    .regex(/^[a-zA-Z]+$/, {
+    .regex(/^[a-zA-ZÀ-ÖØ-öø-ÿ\s'-]+$/, {
       message: "No special characters are allowed in name.",
     }),
 
@@ -272,7 +272,7 @@ export const ShippingAddressSchema = z.object({
     .string()
     .min(2, { message: "Last name should be at least 2 characters long." })
     .max(50, { message: "Last name cannot exceed 50 characters." })
-    .regex(/^[a-zA-Z]+$/, {
+    .regex(/^[a-zA-ZÀ-ÖØ-öø-ÿ\s'-]+$/, {
       message: "No special characters are allowed in name.",
     }),
   phone: z
@@ -283,8 +283,6 @@ export const ShippingAddressSchema = z.object({
     .string()
     .min(5, { message: "Address line 1 should be at least 5 characters long." })
     .max(100, { message: "Address line 1 cannot exceed 100 characters." }),
-
-  commune: z.string(),
 
   default: z.boolean().default(false).nonoptional(),
 });

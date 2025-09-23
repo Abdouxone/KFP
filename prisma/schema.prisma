@@ -332,24 +332,24 @@ model Willaya {
 
   ShippingAddresses ShippingAddress[] @relation("WillayaToShippingAddress")
 
-  communes Commune[] @relation("CityToWillaya")
+  // communes Commune[] @relation("CityToWillaya")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-model Commune {
-  id   String @id @default(uuid())
-  name String @unique
+// model Commune {
+//   id   String @id @default(uuid())
+//   name String @unique
 
-  willayaId String
-  willaya   Willaya @relation("CityToWillaya", fields: [willayaId], references: [id], onDelete: Cascade)
+//   willayaId String
+//   willaya   Willaya @relation("CityToWillaya", fields: [willayaId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @default(now()) @updatedAt
 
-  @@index([willayaId])
-}
+//   @@index([willayaId])
+// }
 
 model ShippingAddress {
   id        String  @id @default(uuid())
@@ -357,7 +357,7 @@ model ShippingAddress {
   lastName  String
   phone     String
   address1  String
-  city      String
+
   default   Boolean @default(false)
 
   userId String

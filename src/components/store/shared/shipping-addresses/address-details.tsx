@@ -1,12 +1,11 @@
 "use client";
 //Prisma Model
-import { Commune, Willaya } from "@/generated/prisma/client";
 
 // Schema import
 import { ShippingAddressSchema } from "@/lib/schemas";
 
 //React Component
-import { FC, useEffect, useState } from "react";
+import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 
 //form handling utilities
 import * as z from "zod";
@@ -26,7 +25,6 @@ import {
 } from "@/components/ui/form";
 
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 
 // queries import
 
@@ -36,7 +34,7 @@ import { v4 } from "uuid";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 // Types
-import { userShippingAddressType, WillayaWithCommunesType } from "@/lib/types";
+import { userShippingAddressType } from "@/lib/types";
 import { Button } from "../../ui/button";
 import {
   Select,
@@ -45,17 +43,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getAllCommuneForWillaya } from "@/queries/user";
+import { upsertShippingAddress } from "@/queries/user";
+import { Willaya } from "@/generated/prisma";
 
 interface AddressDetailsProps {
   data?: userShippingAddressType;
-  willayas: WillayaWithCommunesType[];
+  willayas: Willaya[];
+  setShow: Dispatch<SetStateAction<boolean>>;
 }
 
-const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
+const AddressDetails: FC<AddressDetailsProps> = ({
+  willayas,
+  data,
+  setShow,
+}) => {
   //Initializing necessary hooks
-  // const { toast } = useToast(); //Hook for displaying toast messages
-  const Router = useRouter(); //Hook for programmatic navigation
+
+  const router = useRouter(); //Hook for programmatic navigation
 
   //Form hook for managing form state and validation
   const form = useForm<z.infer<typeof ShippingAddressSchema>>({
@@ -63,11 +67,11 @@ const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
     resolver: zodResolver(ShippingAddressSchema), //Zod schema resolver for validation
     defaultValues: {
       //setting default form values from data (if available)
-      firstName: data?.firstName ?? "",
-      lastName: data?.lastName ?? "",
-      address1: data?.address1 ?? "",
-      commune: data?.city ?? "",
-      phone: data?.phone ?? "",
+      firstName: data?.firstName,
+      lastName: data?.lastName,
+      address1: data?.address1,
+      willayaId: data?.willayaId,
+      phone: data?.phone,
       default: data?.default,
     },
   });
@@ -78,7 +82,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
   //Reset form values when data changes
   useEffect(() => {
     if (data) {
-      form.reset(data);
+      form.reset({ ...data });
     }
   }, [data, form]);
 
@@ -87,56 +91,48 @@ const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
     values: z.infer<typeof ShippingAddressSchema>
   ) => {
     try {
-      //Upserting category data
-
+      console.log("first name: ", values);
+      //Upserting Shipping data
       const response = await upsertShippingAddress({
         id: data?.id ? data.id : v4(),
-
+        firstName: values.firstName,
+        lastName: values.lastName,
+        address1: values.address1,
+        phone: values.phone,
+        willayaId: values.willayaId,
+        userId: "",
+        default: values.default,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
 
-      // Redirect or Refresh data
+      // Displaying Success message
       if (data?.id) {
-        Router.refresh();
+        toast.success("Shipping address has been updated.");
       } else {
-        Router.push("/dashboard/admin/categories");
+        toast.success(`Congratulations!  Shipping address is now created.`);
       }
 
-      //Displaying success message
-      // toast({
-      //   title: data?.id
-      //     ? "Category has been updated."
-      //     : `Congratulations! '${response?.name}' is now created.} `,
-      // });
-
-      if (data?.id) {
-        toast.success("Category has been updated.");
-      } else {
-        toast.success(`Congratulations!  '${response?.name}' is now created.`);
-      }
+      // Refresh Data
+      router.refresh();
+      setShow(false);
     } catch (error: any) {
       console.log(error);
       toast.error(error.toString());
-      // toast({
-      //   variant: "destructive",
-      //   title: "Oops!",
-      //   description: error.toString(),
-      // });
     }
   };
 
   // State for communes
-  const [communes, setCommunes] = useState<Commune[]>([]);
+  // const [communes, setCommunes] = useState<Commune[]>([]);
 
   // UseEffect to get Communes when user pick/change a Willaya
-  useEffect(() => {
-    const getCommunes = async () => {
-      const res = await getAllCommuneForWillaya(form.watch().willayaId);
-      setCommunes(res);
-    };
-    getCommunes();
-  }, [form.watch().willayaId]);
+  // useEffect(() => {
+  //   const getCommunes = async () => {
+  //     const res = await getAllCommuneForWillaya(form.watch().willayaId);
+  //     setCommunes(res);
+  //   };
+  //   getCommunes();
+  // }, [form.watch().willayaId]);
 
   return (
     <div>
@@ -146,7 +142,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
             <FormLabel>Contact Information</FormLabel>
             <div className="flex flex-col md:flex-row gap-3">
               <FormField
-                disabled={isLoading}
+                // disabled={isLoading}
                 control={form.control}
                 name="firstName"
                 render={({ field }) => (
@@ -159,7 +155,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
                 )}
               />
               <FormField
-                disabled={isLoading}
+                // disabled={isLoading}
                 control={form.control}
                 name="lastName"
                 render={({ field }) => (
@@ -173,7 +169,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
               />
             </div>
             <FormField
-              disabled={isLoading}
+              // disabled={isLoading}
               control={form.control}
               name="phone"
               render={({ field }) => (
@@ -195,10 +191,10 @@ const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
                 name="willayaId"
                 render={({ field }) => (
                   <FormItem className="flex-1 relative">
-                    <FormLabel>Choose Willaya</FormLabel>
+                    <FormLabel className="mb-1">Choose Willaya</FormLabel>
 
                     <Select
-                      //   disabled={isLoading || categories.length == 0}
+                      disabled={isLoading || willayas.length == 0}
                       onValueChange={field.onChange}
                       value={field.value}
                       defaultValue={field.value}
@@ -211,7 +207,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
                           />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="max-h-[300px] overflow-y-auto overflow-x-auto scrollbar">
+                      <SelectContent className="max-h-[300px]  overflow-y-auto overflow-x-auto scrollbar">
                         {willayas
                           .slice() // make a shallow copy so original array isn’t mutated
                           .sort((a, b) => a.code.localeCompare(b.code)) // ascending by code
@@ -227,7 +223,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
                   </FormItem>
                 )}
               />
-              {form.watch("willayaId") && (
+              {/* {form.watch("willayaId") && (
                 <FormField
                   // disabled={isLoading}
                   control={form.control}
@@ -263,12 +259,12 @@ const AddressDetails: FC<AddressDetailsProps> = ({ willayas, data }) => {
                     </FormItem>
                   )}
                 />
-              )}
+              )} */}
             </div>
 
             <div className="!mt-3 flex flex-col gap-3">
               <FormField
-                disabled={isLoading}
+                // disabled={isLoading}
                 control={form.control}
                 name="address1"
                 render={({ field }) => (

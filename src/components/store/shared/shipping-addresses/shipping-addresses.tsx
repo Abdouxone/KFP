@@ -1,17 +1,17 @@
 // Types
-import { Commune, ShippingAddress, Willaya } from "@/generated/prisma";
-import { userShippingAddressType, WillayaWithCommunesType } from "@/lib/types";
+import { ShippingAddress, Willaya } from "@/generated/prisma";
+import { userShippingAddressType } from "@/lib/types";
 import { Plus } from "lucide-react";
 
 import { Dispatch, FC, SetStateAction, useState } from "react";
 import Modal from "../modal";
 import AddressDetails from "./address-details";
+import AddressList from "./address-list";
 
 interface Props {
-  willayas: WillayaWithCommunesType[];
+  willayas: Willaya[];
   addresses: userShippingAddressType[];
   selectedAddress: ShippingAddress | null;
-
   setSelectedAddress: Dispatch<SetStateAction<ShippingAddress | null>>;
 }
 
@@ -21,14 +21,19 @@ const UserShippingAddresses: FC<Props> = ({
   selectedAddress,
   setSelectedAddress,
 }) => {
-  const [show, setShow] = useState<boolean>(true);
+  const [show, setShow] = useState<boolean>(false);
   return (
     <div className="w-full py-4 px-6 bg-white">
       <div className="relative flex flex-col text-sm ">
         <h1 className="text-lg mb-3 font-bold">Shipping Addresses</h1>
         {addresses && addresses.length > 0 && (
           /* Addresses List */
-          <div></div>
+          <AddressList
+            willayas={willayas}
+            addresses={addresses}
+            selectedAddress={selectedAddress}
+            setSelectedAddress={setSelectedAddress}
+          />
         )}
         <div
           className="mt-4 ml-8 text-orange-background cursor-pointer"
@@ -40,7 +45,7 @@ const UserShippingAddresses: FC<Props> = ({
         {/* Modal */}
         <Modal title="Add new Address" show={show} setShow={setShow}>
           {/* AddressDetail */}
-          <AddressDetails willayas={willayas} />
+          <AddressDetails willayas={willayas} setShow={setShow} />
         </Modal>
       </div>
     </div>
