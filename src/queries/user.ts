@@ -7,6 +7,7 @@ import { CartProductType } from "@/lib/types";
 
 // Next js
 import { currentUser } from "@clerk/nextjs/server";
+import { use } from "react";
 import { fa } from "zod/v4/locales";
 
 /*
@@ -286,4 +287,115 @@ export const upsertShippingAddress = async (address: ShippingAddress) => {
     console.error("Error upserting shipping address:", error);
     throw error;
   }
+};
+
+// Function: placeOrder
+// Description: place order for user
+// Permission Level: User who created the order
+// Parameters: Order
+// Returns: none
+
+export const placeOrder = async (
+  shippingAddress: ShippingAddress,
+  cartId: string
+) => {
+  // Ensure the user is authenticated
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthenticated.");
+
+  const userId = user.id;
+
+  // Fetch user's cart with all items
+  const cart = await db.cart.findUnique({
+    where: {
+      id: cartId,
+    },
+    include: {
+      cartItems: true,
+    },
+  });
+
+  if (!cart) throw new Error("Cart not found");
+
+  const cartItems = cart.cartItems;
+
+  // Fetch product, variant, and size data from the database for validation
+  const validatedCartItems = await Promise.all(
+    cartItems.map(async (cartProduct) => {
+      const { productId, variantId, sizeId, quantity } = cartProduct;
+
+      // Fetch the product, variant, and size from the database
+      const product = await db.product.findUnique({
+        where: {
+          id: productId,
+        },
+        include: {
+          store: true,
+          variants: {
+            where: {
+              id: variantId,
+            },
+            include: {
+              sizes: {
+                where: {
+                  id: sizeId,
+                },
+              },
+              images: true,
+            },
+          },
+        },
+      });
+
+      if (
+        !product ||
+        product.variants.length === 0 ||
+        product.variants[0].sizes.length === 0
+      ) {
+        throw new Error(
+          `Invalid product, variant, or size combination for productId ${productId}, variantId ${variantId}, and sizeId ${sizeId}.`
+        );
+      }
+
+      const variant = product.variants[0];
+      const size = variant.sizes[0];
+
+      // Validate stock and price
+      const validQuantity = Math.min(quantity, 10001);
+
+      const price = size.discount
+        ? size.price - size.price * (size.discount / 100)
+        : size.price;
+
+      // Calculate total price
+      const totalPrice = validQuantity * price;
+      return {
+        productId,
+        variantId,
+        productSlug: product.slug,
+        variantSlug: variant.slug,
+        sizeId,
+        storeId: product.storeId,
+        sku: variant.sku,
+        name: `${product.name} · ${variant.variantName}`,
+        image: variant.images[0].url,
+        size: size.size,
+        quantity: validQuantity,
+        price,
+        totalPrice,
+      };
+    })
+  );
+
+  // Create the order
+  const order = await db.order.create({
+    data: {
+      total: cart.total,
+      userId: userId,
+      shippingAddressId: shippingAddress.id,
+      orderStatus: "Pending",
+      payementStatus: "Pending",
+    },
+  });
+  console.log("validatedCartItems", validatedCartItems);
 };

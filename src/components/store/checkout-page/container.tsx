@@ -7,6 +7,8 @@ import { CartWithCartItemsType, userShippingAddressType } from "@/lib/types";
 import { FC, useState } from "react";
 import UserShippingAddresses from "../shared/shipping-addresses/shipping-addresses";
 import { ShippingAddress, Willaya } from "@/generated/prisma";
+import CheckoutProductCard from "../cards/checkout-product";
+import PlaceOrderCard from "../cards/place-order";
 
 interface Props {
   cart: CartWithCartItemsType;
@@ -31,7 +33,7 @@ const CheckoutContainer: FC<Props> = ({ cart, willayas, addresses }) => {
           <div className="relative">
             {cart.cartItems.map((product) => (
               // CheckoutProductCard
-              <div>{product.name}</div>
+              <CheckoutProductCard key={product.variantId} product={product} />
             ))}
           </div>
         </div>
@@ -39,6 +41,11 @@ const CheckoutContainer: FC<Props> = ({ cart, willayas, addresses }) => {
 
       {/* Cart side */}
       {/* PlaceOrderCard */}
+      <PlaceOrderCard
+        cartId={cart.id}
+        shippingAddress={selectedAddress}
+        total={cart.total}
+      />
     </div>
   );
 };

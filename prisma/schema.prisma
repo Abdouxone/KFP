@@ -33,6 +33,8 @@ model User {
 
   shippingAddresses ShippingAddress[] @relation("UserShippingAddresses")
 
+  orders Order[] @relation("userOrders")
+
   cart Cart? @relation("UserCart")
 
   createdAt DateTime @default(now())
@@ -366,9 +368,72 @@ model ShippingAddress {
   willayaId String
   willaya   Willaya @relation("WillayaToShippingAddress", fields: [willayaId], references: [id], onDelete: Cascade)
 
+  orders Order[] @relation("ShippingAddressToOrder")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([willayaId])
   @@index([userId])
 }
+
+enum OrderStatus {
+  Pending
+  Confirmed
+  Processing
+  Shipped
+  OutforDelivery
+  Delivered
+  Cancelled
+  Failed
+  Refunded
+  Returned
+  PartiallyShipped
+  OnHold
+}
+
+enum PayementStatus {
+  Pending 
+  Paid
+  Failed
+  Declined
+  Cancelled
+  Refunded
+  PartiallyRefunded
+  Chargeback
+}
+
+model Order {
+  id        String  @id @default(uuid())
+  total Float
+  orderStatus OrderStatus @default(Pending)
+  payementStatus PayementStatus @default(Pending)
+
+
+
+  shippingAddressId String
+  shippingAddress ShippingAddress @relation("ShippingAddressToOrder",fields: [shippingAddressId],references: [id], onDelete: Cascade)
+
+  userId String
+  user User @relation("userOrders",fields: [userId],references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+
+@@index([userId])
+@@index([shippingAddressId])
+}
+
+// model OrderGroup {
+//   id        String  @id @default(uuid())
+//   status OrderStatus @default(Pending)
+
+
+
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @default(now()) @updatedAt
+
+
+// }

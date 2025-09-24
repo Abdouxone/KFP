@@ -10,6 +10,9 @@ import { Check } from "lucide-react";
 import { FC, useState } from "react";
 import Modal from "../shared/modal";
 import AddressDetails from "../shared/shipping-addresses/address-details";
+import { toast } from "sonner";
+import { upsertShippingAddress } from "@/queries/user";
+import { useRouter } from "next/navigation";
 
 interface Props {
   address: userShippingAddressType;
@@ -25,6 +28,23 @@ const ShippingAddressCard: FC<Props> = ({
   onSelect,
 }) => {
   const [show, setShow] = useState<boolean>(false);
+
+  const router = useRouter();
+
+  const handleMakeDefault = async () => {
+    try {
+      const response = await upsertShippingAddress({
+        ...address,
+        default: true,
+      });
+      if (response) {
+        toast.success("New default address saved.");
+        router.refresh();
+      }
+    } catch (error) {
+      toast.error("Something went wrong !");
+    }
+  };
   return (
     <div className="w-full relative flex self-start group">
       {/* Check Box */}
@@ -72,7 +92,7 @@ const ShippingAddressCard: FC<Props> = ({
             <span className="text-xs text-[#27f]">Edit</span>
           </div>
           {isSelected && !address.default && (
-            <div className="cursor-pointer">
+            <div className="cursor-pointer" onClick={() => handleMakeDefault()}>
               <span className="text-xs text-[#27f]">Save as default</span>
             </div>
           )}
