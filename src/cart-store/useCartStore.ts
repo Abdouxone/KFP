@@ -21,6 +21,7 @@ interface Actions {
   removeMultipleFromCart: (items: CartProductType[]) => void; // Multiple product removal
   removeFromCart: (Item: CartProductType) => void; // Single product removal
   emptyCart: () => void;
+  setCart: (newCart: CartProductType[]) => void; // Added setCart method
 }
 
 // Initialize a default state
@@ -121,13 +122,36 @@ export const useCartStore = create(
           totalItems,
           totalPrice,
         }));
+
+        // Manually sync with local storage after removal
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
       },
 
       // remove multiple from cart
       removeMultipleFromCart: (products: CartProductType[]) => {
-        products.forEach((product) => {
-          get().removeFromCart(product);
-        });
+        const cart = get().cart;
+        const updatedCart = cart.filter(
+          (item) =>
+            !products.some(
+              (product) =>
+                product.productId === item.productId &&
+                product.variantId === item.variantId &&
+                product.sizeId === item.sizeId
+            )
+        );
+        const totalItems = updatedCart.length;
+        const totalPrice = updatedCart.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+        set(() => ({
+          cart: updatedCart,
+          totalItems,
+          totalPrice,
+        }));
+
+        // Manually sync with local storage after removal
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
       },
 
       // Empty all cart
@@ -136,6 +160,21 @@ export const useCartStore = create(
           cart: [],
           totalItems: 0,
           totalPrice: 0,
+        }));
+
+        // Explicitly clear cart from local storage
+        localStorage.removeItem("cart");
+      },
+      setCart: (newCart: CartProductType[]) => {
+        const totalItems = newCart.length;
+        const totalPrice = newCart.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+        set(() => ({
+          cart: newCart,
+          totalItems,
+          totalPrice,
         }));
       },
     }),

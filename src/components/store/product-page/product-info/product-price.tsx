@@ -1,10 +1,7 @@
 // React Next.js
 import { CartProductType } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { se } from "date-fns/locale";
-import { usePathname, useRouter } from "next/navigation";
 import { FC, useEffect } from "react";
-import { check, size } from "zod";
 
 interface SimplifiedSize {
   id: string;
@@ -121,6 +118,9 @@ const ProductPrice: FC<Props> = ({ sizeId, sizes, isCard, handleChange }) => {
       )}
       {selectedSize.quantity > 0 && (
         <p className="mt-2 text-xs text-green-600">In Stock</p>
+      )}
+      {selectedSize.quantity <= 0 && (
+        <p className="mt-2 text-xs text-red-600">Out of Stock</p>
       )}
     </div>
   );

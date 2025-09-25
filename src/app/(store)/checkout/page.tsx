@@ -9,6 +9,7 @@ import {
   getUserShippingAddresses,
   getWillayaWithCommunes,
 } from "@/queries/user";
+import Header from "@/components/store/layout/header/header";
 
 export default async function CheckoutPage() {
   const user = await currentUser();
@@ -32,14 +33,17 @@ export default async function CheckoutPage() {
   const willayas = await getWillayaWithCommunes();
 
   return (
-    <div className="bg-[#f4f4f4] min-h-screen">
-      <div className="max-w-container mx-auto py-5 px-2">
-        <CheckoutContainer
-          cart={cart}
-          willayas={willayas}
-          addresses={addresses}
-        />
+    <>
+      <Header />
+      <div className="bg-[#f4f4f4] min-h-[calc(100vh-65px)]">
+        <div className="max-w-container mx-auto py-5 px-2">
+          <CheckoutContainer
+            cart={cart}
+            willayas={willayas}
+            addresses={addresses}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

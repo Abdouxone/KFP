@@ -4,7 +4,9 @@ import { FC } from "react";
 import { Button } from "../ui/button";
 import { SecurityPrivacyCard } from "../product-page/returns-security-privacy-card";
 import toast from "react-hot-toast";
-import { placeOrder } from "@/queries/user";
+import { emptyUserCart, placeOrder } from "@/queries/user";
+import { redirect, useRouter } from "next/navigation";
+import { useCartStore } from "@/cart-store/useCartStore";
 
 interface Props {
   total: number;
@@ -13,11 +15,19 @@ interface Props {
 }
 
 const PlaceOrderCard: FC<Props> = ({ cartId, shippingAddress, total }) => {
+  const emptyCart = useCartStore((state) => state.emptyCart);
+  const { push } = useRouter();
   const handlePlaceOrder = async () => {
     if (!shippingAddress) {
       toast.error("Please select a shipping address first !");
     } else {
-      const res = await placeOrder(shippingAddress, cartId);
+      const order = await placeOrder(shippingAddress, cartId);
+      if (order) {
+        toast.success("Order placed successfully.");
+        await emptyUserCart();
+        emptyCart();
+        push(`/order/${order.orderId}`);
+      }
     }
   };
   return (

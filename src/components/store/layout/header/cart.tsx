@@ -1,9 +1,16 @@
+"use client";
+// next js
 import Link from "next/link";
+
+// icons
 import { CartIcon } from "../../icons";
+
+// cart
+import { useCartStore } from "@/cart-store/useCartStore";
 
 export default function Cart() {
   // Get the total items in the cart
-  const totalItems = 5;
+  const totalItems = useCartStore((state) => state.totalItems);
 
   return (
     <div className="relative flex h-11 items-center px-2 cursor-pointer">

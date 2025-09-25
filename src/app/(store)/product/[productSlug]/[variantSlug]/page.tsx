@@ -1,3 +1,5 @@
+import CategoriesHeader from "@/components/store/layout/categories-header/categories-header";
+import Header from "@/components/store/layout/header/header";
 import ProductPageContainer from "@/components/store/product-page/container";
 import ProductDescription from "@/components/store/product-page/product-description";
 import ProductQuestions from "@/components/store/product-page/product-questions";
@@ -59,6 +61,8 @@ export default async function ProductVariantPage({
 
   return (
     <div>
+      <Header />
+      <CategoriesHeader />
       <div className="max-w-[1650px] mx-auto p-4 overflow-x-hidden">
         <ProductPageContainer productData={productData} sizeId={sizeId}>
           {relatedProducts.products && (

@@ -70,11 +70,12 @@ const ProductPageContainer: FC<Props> = ({ productData, sizeId, children }) => {
   }, [productToBeAddedToCart]);
 
   // Get the store action to add items to cart
-
   const addToCart = useCartStore((state) => state.addToCart);
 
+  // Get the set Cart action to UPDATE items in cart
+  const setCart = useCartStore((state) => state.setCart);
+
   const cartItems = useFromStore(useCartStore, (state) => state.cart);
-  console.log("cart Items", cartItems);
 
   const handleAddToCart = () => {
     if (maxQty <= 0) return;
@@ -92,6 +93,39 @@ const ProductPageContainer: FC<Props> = ({ productData, sizeId, children }) => {
     );
     return search_product ? 10000 - search_product.quantity : 10000;
   }, [cartItems, productId, variantId, sizeId, stock]);
+
+  // Keeping cart state up to date
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      // Check if the "cart" key was changed in localStorage
+      if (event.key === "cart") {
+        try {
+          const parsedValue = event.newValue
+            ? JSON.parse(event.newValue)
+            : null;
+
+          // Check if parsedValue and state are valid and then update the cart
+          if (
+            parsedValue &&
+            parsedValue.state &&
+            Array.isArray(parsedValue.state.cart)
+          ) {
+            setCart(parsedValue.state.cart);
+          }
+        } catch (error) {
+          console.error("Failed to parse updated cart data:", error);
+        }
+      }
+    };
+
+    // Attach the event listener
+    window.addEventListener("storage", handleStorageChange);
+
+    // Cleanup the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   return (
     <div className="relative">

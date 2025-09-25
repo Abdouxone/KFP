@@ -80,8 +80,24 @@ const CartProduct: FC<Props> = ({
     }
   };
 
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newQuantity = Math.max(
+      1,
+      Math.min(10000, parseInt(e.target.value) || 1)
+    ); // Limit quantity
+    updateProductQuantity(product, newQuantity);
+  };
+
+  if (stock <= 0) {
+    updateProductQuantity(product, 0);
+  }
+
   return (
-    <div className="bg-white px-6 border-t border-t-[#ebebeb] select-none">
+    <div
+      className={cn("bg-white px-6 border-t border-t-[#ebebeb] select-none", {
+        "bg-red-100": stock === 0,
+      })}
+    >
       <div className="py-4">
         <div className="relative flex self-start">
           {/* Image */}
@@ -185,6 +201,7 @@ const CartProduct: FC<Props> = ({
                     value={quantity}
                     max={10000}
                     min={1}
+                    onChange={handleQuantityChange}
                     className="m-1 h-6 w-[40px] bg-transparent border-none leading-6 tracking-normal text-center outline-none text-gray-900 font-bold"
                   />
                   <div

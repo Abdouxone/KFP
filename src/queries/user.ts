@@ -298,7 +298,7 @@ export const upsertShippingAddress = async (address: ShippingAddress) => {
 export const placeOrder = async (
   shippingAddress: ShippingAddress,
   cartId: string
-) => {
+): Promise<{ orderId: string }> => {
   // Ensure the user is authenticated
   const user = await currentUser();
   if (!user) throw new Error("Unauthenticated.");
@@ -397,5 +397,114 @@ export const placeOrder = async (
       payementStatus: "Pending",
     },
   });
-  console.log("validatedCartItems", validatedCartItems);
+
+  return {
+    orderId: order.id,
+  };
+};
+
+// Function: emptyUserCart
+// Description: empty user cart
+// Permission Level: User who created the cart
+// Parameters: none
+// Returns: none
+export const emptyUserCart = async () => {
+  try {
+    // Ensure the user is authenticated
+    const user = await currentUser();
+    if (!user) throw new Error("Unauthenticated.");
+
+    const userId = user.id;
+    const res = await db.cart.delete({
+      where: {
+        userId,
+      },
+    });
+    if (res) return res;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/*
+ * Function: updateCartWithLatest
+ * Description: Keeps the cart updated with latest info (price,qty...).
+ * Permission Level: Public
+ * Parameters:
+ *   - cartProducts: An array of product objects from the frontend cart.
+ * Returns:
+ *   - An object containing the updated cart with recalculated total price and validated product data.
+ */
+
+export const updateCartWithLatest = async (
+  cartProduct: CartProductType[]
+): Promise<CartProductType[]> => {
+  // Fetch product, variant, and size data from the database for validation
+  const validatedCartItems = await Promise.all(
+    cartProduct.map(async (cartProduct) => {
+      const { productId, variantId, sizeId, quantity } = cartProduct;
+
+      // Fetch the product, variant, and size from the database
+      const product = await db.product.findUnique({
+        where: {
+          id: productId,
+        },
+        include: {
+          store: true,
+          variants: {
+            where: {
+              id: variantId,
+            },
+            include: {
+              sizes: {
+                where: {
+                  id: sizeId,
+                },
+              },
+              images: true,
+            },
+          },
+        },
+      });
+
+      if (
+        !product ||
+        product.variants.length === 0 ||
+        product.variants[0].sizes.length === 0
+      ) {
+        // return cartProduct;
+        throw new Error(
+          `Invalid product, variant, or size combination for productId ${productId}, variantId ${variantId}, and sizeId ${sizeId}.`
+        );
+      }
+
+      const variant = product.variants[0];
+      const size = variant.sizes[0];
+      const price = size.discount
+        ? size.price - size.price * (size.discount / 100)
+        : size.price;
+
+      const validated_qty = Math.min(quantity, 10001);
+
+      const validatedPrice = price * validated_qty;
+      return {
+        productId,
+        variantId,
+        productSlug: product.slug,
+        variantSlug: variant.slug,
+        sizeId,
+        sku: variant.sku,
+        name: product.name,
+        variantName: variant.variantName,
+        image: variant.images[0].url,
+        variantImage: variant.variantImage,
+        stock: size.quantity,
+        size: size.size,
+        quantity: validated_qty,
+        price,
+      };
+    })
+  );
+
+  return validatedCartItems;
 };
