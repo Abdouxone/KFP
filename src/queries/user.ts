@@ -1,9 +1,9 @@
 "use server";
-import { ShippingAddress } from "@/generated/prisma";
+import { CartItem, ShippingAddress } from "@/generated/prisma";
 // Db
 import { db } from "@/lib/db";
 //Types
-import { CartProductType } from "@/lib/types";
+import { CartProductType, CartWithCartItemsType } from "@/lib/types";
 
 // Next js
 import { currentUser } from "@clerk/nextjs/server";
@@ -387,6 +387,16 @@ export const placeOrder = async (
     })
   );
 
+  // Define the type for grouped items by store
+  type GroupedItems = { [storeId: string]: typeof validatedCartItems };
+
+  // Group validated items by store
+  const groupedItems = validatedCartItems.reduce<GroupedItems>((acc, item) => {
+    if (!acc[item.storeId]) acc[item.storeId] = [];
+    acc[item.storeId].push(item);
+    return acc;
+  }, {} as GroupedItems);
+
   // Create the order
   const order = await db.order.create({
     data: {
@@ -395,6 +405,65 @@ export const placeOrder = async (
       shippingAddressId: shippingAddress.id,
       orderStatus: "Pending",
       payementStatus: "Pending",
+    },
+  });
+
+  // Iterate over each store's items and create OrderGroup and OrderItems
+  let orderTotalPrice = 0;
+  // let orderShippingFee = 0;
+
+  for (const [storeId, items] of Object.entries(groupedItems)) {
+    // Calculate store-specific totals
+    const groupedTotalPrice = items.reduce(
+      (acc, item) => acc + item.totalPrice,
+      0
+    );
+
+    const total = groupedTotalPrice;
+
+    // Create an OrderGroup for this store
+    const orderGroup = await db.orderGroup.create({
+      data: {
+        orderId: order.id,
+        storeId: storeId,
+        status: "Pending",
+        total: total,
+        shippingService: "International Delivery",
+      },
+    });
+
+    // Update order totals
+    orderTotalPrice += total;
+
+    // Create OrderItems for this OrderGroup
+    for (const item of items) {
+      await db.orderItem.create({
+        data: {
+          orderGroupId: orderGroup.id,
+          productId: item.productId,
+          variantId: item.variantId,
+          sizeId: item.sizeId,
+          productSlug: item.productSlug,
+          variantSlug: item.variantSlug,
+          sku: item.sku,
+          name: item.name,
+          image: item.image,
+          size: item.size,
+          quantity: item.quantity,
+          price: item.price,
+          totalPrice: item.totalPrice,
+        },
+      });
+    }
+  }
+
+  // Update the main order with the final totals
+  await db.order.update({
+    where: {
+      id: order.id,
+    },
+    data: {
+      total: orderTotalPrice,
     },
   });
 
@@ -507,4 +576,109 @@ export const updateCartWithLatest = async (
   );
 
   return validatedCartItems;
+};
+
+/*
+ * Function: updateCheckoutProductsWithLatest
+ * Description: Keeps the checkout products updated with latest info (price,qty...).
+ * Permission Level: Public
+ * Parameters:
+ *   - cartProducts: An array of product objects from the frontend cart.
+ * Returns:
+ *   - An object containing the updated cart with recalculated total price and validated product data.
+ */
+
+export const updateCheckoutProductsWithLatest = async (
+  cartProduct: CartItem[]
+): Promise<CartWithCartItemsType> => {
+  // Fetch product, variant, and size data from the database for validation
+  const validatedCartItems = await Promise.all(
+    cartProduct.map(async (cartProduct) => {
+      const { productId, variantId, sizeId, quantity } = cartProduct;
+
+      // Fetch the product, variant, and size from the database
+      const product = await db.product.findUnique({
+        where: {
+          id: productId,
+        },
+        include: {
+          store: true,
+          variants: {
+            where: {
+              id: variantId,
+            },
+            include: {
+              sizes: {
+                where: {
+                  id: sizeId,
+                },
+              },
+              images: true,
+            },
+          },
+        },
+      });
+
+      if (
+        !product ||
+        product.variants.length === 0 ||
+        product.variants[0].sizes.length === 0
+      ) {
+        // return cartProduct;
+        throw new Error(
+          `Invalid product, variant, or size combination for productId ${productId}, variantId ${variantId}, and sizeId ${sizeId}.`
+        );
+      }
+
+      const variant = product.variants[0];
+      const size = variant.sizes[0];
+
+      const price = size.discount
+        ? size.price - size.price * (size.discount / 100)
+        : size.price;
+
+      const validated_qty = Math.min(quantity, 10001);
+
+      const totalPrice = price * validated_qty;
+
+      try {
+        const newCartItem = await db.cartItem.update({
+          where: {
+            id: cartProduct.id,
+          },
+          data: {
+            name: `${product.name} · ${variant.variantName}`,
+            image: variant.images[0].url,
+            price,
+            quantity: validated_qty,
+            totalPrice,
+          },
+        });
+        return newCartItem;
+      } catch (error) {
+        return cartProduct;
+      }
+    })
+  );
+
+  // Recalculate the cart's total price
+  const total = validatedCartItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
+
+  const cart = await db.cart.update({
+    where: {
+      id: cartProduct[0].cartId,
+    },
+    data: {
+      total,
+    },
+    include: {
+      cartItems: true,
+    },
+  });
+
+  if (!cart) throw new Error("Something Went Wrong!");
+  return cart;
 };

@@ -59,7 +59,7 @@ export default function CheckoutProductCard({
               <div className="font-bold w-full flex items-start justify-between">
                 <div className="flex items-center gap-x-2">
                   <span className="inline-block break-all">
-                    ${product.price.toFixed(2)} x {product.quantity}
+                    {product.price} Da x {product.quantity}
                   </span>
                   {/* {isDiscounted && (
                     <span className="text-xs font-normal text-orange-background">

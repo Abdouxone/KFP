@@ -1,12 +1,13 @@
 import { ShippingAddress } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Button } from "../ui/button";
 import { SecurityPrivacyCard } from "../product-page/returns-security-privacy-card";
 import toast from "react-hot-toast";
 import { emptyUserCart, placeOrder } from "@/queries/user";
 import { redirect, useRouter } from "next/navigation";
 import { useCartStore } from "@/cart-store/useCartStore";
+import { PulseLoader } from "react-spinners";
 
 interface Props {
   total: number;
@@ -15,9 +16,11 @@ interface Props {
 }
 
 const PlaceOrderCard: FC<Props> = ({ cartId, shippingAddress, total }) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const emptyCart = useCartStore((state) => state.emptyCart);
   const { push } = useRouter();
   const handlePlaceOrder = async () => {
+    setLoading(true);
     if (!shippingAddress) {
       toast.error("Please select a shipping address first !");
     } else {
@@ -29,6 +32,7 @@ const PlaceOrderCard: FC<Props> = ({ cartId, shippingAddress, total }) => {
         push(`/order/${order.orderId}`);
       }
     }
+    setLoading(false);
   };
   return (
     <div className="sticky top-4 mt-3 ml-5 w-[380px] max-h-max">
@@ -41,7 +45,11 @@ const PlaceOrderCard: FC<Props> = ({ cartId, shippingAddress, total }) => {
               handlePlaceOrder();
             }}
           >
-            <span>Place Order</span>
+            {loading ? (
+              <PulseLoader size={5} color="#fff" />
+            ) : (
+              <span>Place Order</span>
+            )}
           </Button>
         </div>
       </div>

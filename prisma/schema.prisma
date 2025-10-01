@@ -35,6 +35,8 @@ model User {
 
   orders Order[] @relation("userOrders")
 
+  payements PayementDetails[] @relation("PayementDetailsToUser")
+
   cart Cart? @relation("UserCart")
 
   createdAt DateTime @default(now())
@@ -106,6 +108,8 @@ model Store {
   user   User   @relation("UserStores", fields: [userId], references: [id])
 
   cartItems CartItem[] @relation("CartItemToStore")
+
+  orderGroups OrderGroup[] @relation("OrderGroupToStore")
 
   products Product[] @relation("StoreToProduct")
 
@@ -354,13 +358,13 @@ model Willaya {
 // }
 
 model ShippingAddress {
-  id        String  @id @default(uuid())
+  id        String @id @default(uuid())
   firstName String
   lastName  String
   phone     String
   address1  String
 
-  default   Boolean @default(false)
+  default Boolean @default(false)
 
   userId String
   user   User   @relation("UserShippingAddresses", fields: [userId], references: [id], onDelete: Cascade)
@@ -393,7 +397,7 @@ enum OrderStatus {
 }
 
 enum PayementStatus {
-  Pending 
+  Pending
   Paid
   Failed
   Declined
@@ -403,37 +407,157 @@ enum PayementStatus {
   Chargeback
 }
 
+enum PayementMethod {
+  COD
+  BankTransfer
+}
+
 model Order {
-  id        String  @id @default(uuid())
-  total Float
-  orderStatus OrderStatus @default(Pending)
+  id             String         @id @default(uuid())
+  total          Float
+  orderStatus    OrderStatus    @default(Pending)
   payementStatus PayementStatus @default(Pending)
 
-
+  payementMethod  PayementMethod?
+  payementDetails PayementDetails? @relation("PayementDetailsToOrder")
 
   shippingAddressId String
-  shippingAddress ShippingAddress @relation("ShippingAddressToOrder",fields: [shippingAddressId],references: [id], onDelete: Cascade)
+  shippingAddress   ShippingAddress @relation("ShippingAddressToOrder", fields: [shippingAddressId], references: [id], onDelete: Cascade)
 
   userId String
-  user User @relation("userOrders",fields: [userId],references: [id])
+  user   User   @relation("userOrders", fields: [userId], references: [id])
+
+  groups OrderGroup[] @relation("OrderGroupToOrder")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
+  @@index([userId])
+  @@index([shippingAddressId])
+}
 
-@@index([userId])
-@@index([shippingAddressId])
+enum ProductStatus {
+  /// Product has been added to the order but no action taken yet
+  Pending
+
+  /// Product is being prepared (picked, packed, or manufactured)
+  Processing
+
+  /// Product is packed and ready for shipment
+  ReadyForShipment
+
+  /// Product has been shipped
+  Shipped
+
+  /// Product has been delivered to the customer
+  Delivered
+
+  /// Product order has been canceled
+  Canceled
+
+  /// Product has been returned by the customer
+  Returned
+
+  /// Product cost has been refunded
+  Refunded
+
+  /// Delivery attempt failed, product may return to warehouse
+  FailedDelivery
+
+  /// Product is on hold (e.g., stock issues, verification required)
+  OnHold
+
+  /// Product is delayed due to stock unavailability
+  Backordered
+
+  /// Some units of the product were shipped, but the order is not yet complete
+  PartiallyShipped
+
+  /// Customer requested an exchange for the product
+  ExchangeRequested
+
+  /// Product is awaiting customer pickup (for pickup orders)
+  AwaitingPickup
+}
+
+model OrderItem {
+  id String @id @default(uuid())
+
+  productId String
+  variantId String
+  sizeId    String
+
+  productSlug String
+  variantSlug String
+  sku         String
+  name        String
+  image       String
+  size        String
+  quantity    Int    @default(1)
+  price       Float
+  totalPrice  Float
+
+  orderGroupId String
+  orderGroup   OrderGroup @relation("OrderItemToGroup", fields: [orderGroupId], references: [id], onDelete: Cascade)
+
+  status ProductStatus @default(Pending)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderGroupId])
+}
+
+model OrderGroup {
+  id     String      @id @default(uuid())
+  status OrderStatus @default(Pending)
+
+  items OrderItem[] @relation("OrderItemToGroup")
+
+  shippingService     String
+
+
+  total        Float
+
+  orderId String
+  order   Order  @relation("OrderGroupToOrder", fields: [orderId], references: [id])
+
+  storeId String
+  store   Store  @relation("OrderGroupToStore", fields: [storeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([storeId])
 }
 
 // model OrderGroup {
 //   id        String  @id @default(uuid())
 //   status OrderStatus @default(Pending)
 
-
-
-
 //   createdAt DateTime @default(now())
 //   updatedAt DateTime @default(now()) @updatedAt
 
-
 // }
+
+model PayementDetails {
+  id              String @id @default(uuid())
+  payementInentId String
+  payementMethod  String
+  status          String
+  amount          Float
+  currency        String
+
+  userId String
+  user   User   @relation("PayementDetailsToUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  orderId String @unique
+  order   Order  @relation("PayementDetailsToOrder", fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([orderId])
+  @@index([userId])
+}
