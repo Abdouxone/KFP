@@ -1,12 +1,17 @@
 import {
   Cart,
   CartItem,
+  OrderGroup,
+  OrderItem,
   Prisma,
   ProductVariantImage,
   ShippingAddress,
   Size,
+  Store,
+  User,
   Willaya,
 } from "@/generated/prisma";
+import { getOrder } from "@/queries/order";
 import {
   getAllStoreProducts,
   getProductPageData,
@@ -118,4 +123,41 @@ export type CartWithCartItemsType = Cart & {
 
 export type userShippingAddressType = ShippingAddress & {
   willaya: Willaya;
+  user: User;
+};
+
+export type OrderFullType = Prisma.PromiseReturnType<typeof getOrder>;
+
+export enum OrderStatus {
+  Pending = "Pending",
+  Confirmed = "Confirmed",
+  Processing = "Processing",
+  Shipped = "Shipped",
+  OutforDelivery = "OutforDelivery",
+  Delivered = "Delivered",
+  Cancelled = "Cancelled",
+  Failed = "Failed",
+  Refunded = "Refunded",
+  Returned = "Returned",
+  PartiallyShipped = "PartiallyShipped",
+  OnHold = "OnHold",
+}
+
+export enum PaymentStatus {
+  Pending = "Pending",
+  Paid = "Paid",
+  Failed = "Failed",
+  Declined = "Declined",
+  Cancelled = "Cancelled",
+  Refunded = "Refunded",
+  PartiallyRefunded = "PartiallyRefunded",
+  Chargeback = "Chargeback",
+}
+
+export type OrderGroupWithItemsType = OrderGroup & {
+  items: OrderItem[];
+  store: Store;
+  _count: {
+    items: number;
+  };
 };
