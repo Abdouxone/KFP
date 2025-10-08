@@ -126,3 +126,11 @@ export const isProductValidToAdd = (product: CartProductType): boolean => {
 
   return true; // Product is valid
 };
+
+export const downloadBlobAsFile = (blob: Blob, filename: string) => {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+};

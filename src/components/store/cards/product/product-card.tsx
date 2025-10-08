@@ -28,7 +28,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
               {name} · {variantName}
             </div>
             {/* Rating */}
-            {product.rating !== 0 && (
+            {/* {product.rating !== 0 && (
               <div className=" items-center gap-x-1 h-5 hidden">
                 <ReactStars
                   count={5}
@@ -43,7 +43,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
                   {rating} stars
                 </div>
               </div>
-            )}
+            )} */}
             {/* Price */}
             <ProductPrice sizes={sizes} isCard />
           </Link>

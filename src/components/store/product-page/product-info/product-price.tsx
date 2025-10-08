@@ -1,4 +1,5 @@
 // React Next.js
+import { formatPrice } from "@/components/shared/format-price";
 import { CartProductType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { FC, useEffect } from "react";
@@ -45,8 +46,8 @@ const ProductPrice: FC<Props> = ({ sizeId, sizes, isCard, handleChange }) => {
     // If all prices are the same, return a signle price; otherwise, return a range of prices
     const priceDisplay =
       minPrice === maxPrice
-        ? `${minPrice} Da`
-        : `${minPrice} Da - ${maxPrice} Da`;
+        ? `${formatPrice(minPrice)}`
+        : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)} `;
 
     // If a discount exist when minPrice = maxPrice
     let discount = 0;
@@ -92,6 +93,9 @@ const ProductPrice: FC<Props> = ({ sizeId, sizes, isCard, handleChange }) => {
   const discountedPrice =
     selectedSize.price * (1 - (selectedSize.discount || 0) / 100);
 
+  // const formattedPrice = formatPrice(selectedSize.price);
+  // const discountedFormattedPrice = formatPrice(discountedPrice);
+
   // Update product to be added to cart with price and stock quantity
   useEffect(() => {
     handleChange("price", discountedPrice);
@@ -102,12 +106,13 @@ const ProductPrice: FC<Props> = ({ sizeId, sizes, isCard, handleChange }) => {
     <div>
       <div className="text-orange-primary inline-block font-bold leading-none mr-2.5 ">
         <span className="inline-block text-4xl">
-          {discountedPrice} Da{/* toFixed(2) to round to 2 decimal places */}
+          {formatPrice(discountedPrice)}
+          {/* toFixed(2) to round to 2 decimal places */}
         </span>
       </div>
       {selectedSize.price !== discountedPrice && (
         <span className="text-[#999] inline-block text-xl font-normal leading-6 mr-2 line-through">
-          {selectedSize.price} Da
+          {formatPrice(selectedSize.price)}
           {/* toFixed(2) to round to 2 decimal places */}
         </span>
       )}

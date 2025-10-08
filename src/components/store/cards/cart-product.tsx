@@ -1,5 +1,6 @@
 // Types
 import { useCartStore } from "@/cart-store/useCartStore";
+import { formatPrice } from "@/components/shared/format-price";
 import { CartProductType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
@@ -184,7 +185,8 @@ const CartProduct: FC<Props> = ({
             <div className="flex items-center justify-between mt-2 relative">
               <div>
                 <span className="inline-block break-all">
-                  {price} Da x {quantity} = {price * quantity} Da
+                  {formatPrice(price)} x {quantity} ={" "}
+                  {formatPrice(price * quantity)}
                 </span>
               </div>
               {/* Quantity changer */}

@@ -1,3 +1,4 @@
+import { formatPrice } from "@/components/shared/format-price";
 import { PayementDetails } from "@/generated/prisma";
 
 export default function OrderTotalDetailsCard({
@@ -17,7 +18,7 @@ export default function OrderTotalDetailsCard({
           </div>
           <div className="text-right space-y-4">
             <p className="text-white px-3 text-sm py-1.5 bg-blue-primary rounded-lg font-semibold">
-              {total} Da
+              {formatPrice(total)}
             </p>
           </div>
         </div>

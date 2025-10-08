@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { saveUserCart } from "@/queries/user";
 import { PulseLoader } from "react-spinners";
+import { formatPrice } from "@/components/shared/format-price";
 
 interface Props {
   cartItems: CartProductType[];
@@ -41,7 +42,7 @@ const CartSummary: FC<Props> = ({ cartItems }) => {
         <h3 className="flex-1 w-0 min-w-0 text-right">
           <span className="px-0.5  text-black">
             <div className="text-black text-lg inline-block break-all">
-              {subtotal} Da
+              {formatPrice(subtotal)}
             </div>
           </span>
         </h3>

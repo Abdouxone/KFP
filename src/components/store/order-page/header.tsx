@@ -1,12 +1,26 @@
+"use client";
+
 // types
 import OrderStatusTag from "@/components/shared/order-status";
 import PaymentStatusTag from "@/components/shared/payement-status";
 import { Button } from "@/components/ui/button";
 import { OrderFullType, OrderStatus, PaymentStatus } from "@/lib/types";
 import { ChevronLeft, ChevronRight, Download, Printer } from "lucide-react";
+import { generateOrderPDFBlob } from "./pdf-invoise";
+import { downloadBlobAsFile } from "@/lib/utils";
 
 export default function OrderHeader({ order }: { order: OrderFullType }) {
   if (!order) return;
+
+  const handleDownload = async () => {
+    try {
+      const pdfBlob = await generateOrderPDFBlob(order);
+      downloadBlobAsFile(pdfBlob, `Order_${order.id}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
+  };
+
   return (
     <div>
       <div className="w-full  border-b flex items-center justify-between p-2">
@@ -23,7 +37,7 @@ export default function OrderHeader({ order }: { order: OrderFullType }) {
           <PaymentStatusTag status={order.payementStatus as PaymentStatus} />
         </div>
         <div className="flex items-center gap-x-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => handleDownload()}>
             <Download className="me-2 w-4" />
             Export
           </Button>

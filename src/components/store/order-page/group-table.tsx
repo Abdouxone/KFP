@@ -2,6 +2,8 @@
 import OrderStatusTag from "@/components/shared/order-status";
 import { OrderGroupWithItemsType, OrderStatus } from "@/lib/types";
 import Image from "next/image";
+import ProductRow from "./product-row";
+import { formatPrice } from "@/components/shared/format-price";
 
 export default function OrderGroupTable({
   group,
@@ -38,11 +40,11 @@ export default function OrderGroupTable({
         className="w-full px-3 min-[400px]:px-6 grid"
         style={{ gridTemplateColumns: "4fr 1fr" }}
       >
-        {/* <div>
+        <div>
           {group.items.map((product, index) => (
-            <div></div>
+            <ProductRow product={product} key={index} />
           ))}
-        </div> */}
+        </div>
       </div>
       {/* Group info */}
       <div className="w-full border-t borfer-gray-200 px-6 flex flex-col lg:flex-row items-center justify-between">
@@ -71,7 +73,9 @@ export default function OrderGroupTable({
         </div>
         <p className="font-semibold text-xl text-black py-2 ">
           Total price:
-          <span className="text-blue-primary ms-1">{group.total} Da</span>
+          <span className="text-blue-primary ms-1">
+            {formatPrice(group.total)}
+          </span>
         </p>
       </div>
     </div>
