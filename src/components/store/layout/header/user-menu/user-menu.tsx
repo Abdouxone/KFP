@@ -120,6 +120,11 @@ export default async function UserMenu() {
 
 const links = [
   {
+    icon: <UserIcon />,
+    title: "My Profile",
+    link: "/profile/",
+  },
+  {
     icon: <OrderIcon />,
     title: "My Orders",
     link: "/profile/orders",
@@ -129,17 +134,12 @@ const links = [
     title: "Messages",
     link: "/profile/messages",
   },
-  {
-    icon: <WishlistIcon />,
-    title: "WishList",
-    link: "/profile/wishlist",
-  },
 ];
 const extraLinks = [
-  {
-    title: "Profile",
-    link: "/profile",
-  },
+  // {
+  //   title: "Profile",
+  //   link: "/profile",
+  // },
   {
     title: "Settings",
     link: "/",
@@ -160,10 +160,10 @@ const extraLinks = [
     title: "Legal & Privacy",
     link: "",
   },
-  {
-    title: "Discounts & Offers",
-    link: "",
-  },
+  // {
+  //   title: "Discounts & Offers",
+  //   link: "",
+  // },
   {
     title: "Order Dispute Resolution",
     link: "",
