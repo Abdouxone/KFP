@@ -267,3 +267,13 @@
 .max-w-container {
   max-width: 1200px;
 }
+
+/* User account before */
+.user-menu-item::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 4px;
+  background-color: #fd384f;
+  left: 0;
+}

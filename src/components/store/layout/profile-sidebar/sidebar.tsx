@@ -40,7 +40,8 @@ export default function ProfileSidebar() {
                 className={cn(
                   "relative flex h-9 items-center px-4 cursor-pointer hover:bg-[#f5f5f5] ",
                   {
-                    "bg-[#f5f5f5]": item.link && pathname === item.link,
+                    "bg-[#f5f5f5] user-menu-item":
+                      item.link && pathname === item.link,
                   }
                 )}
               >

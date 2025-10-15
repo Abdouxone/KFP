@@ -18,6 +18,7 @@ import {
   getProducts,
   retrieveProductDetails,
 } from "@/queries/product";
+import { getUserOrders } from "@/queries/profile";
 import { getAllSubCategories } from "@/queries/Subcategory";
 import { Variable } from "lucide-react";
 import { StringValidation } from "zod/v3";
@@ -178,3 +179,20 @@ export enum ProductStatus {
   ExchangeRequested = "ExchangeRequested",
   AwaitingPickup = "AwaitingPickup",
 }
+
+export type OrderTableFilter =
+  | ""
+  | "unpaid"
+  | "toShip"
+  | "shipped"
+  | "delivered";
+
+export type OrderTableDateFilter =
+  | ""
+  | "last-6-months"
+  | "last-1-year"
+  | "last-2-years";
+
+export type UserOrderType = Prisma.PromiseReturnType<
+  typeof getUserOrders
+>["orders"][0];
