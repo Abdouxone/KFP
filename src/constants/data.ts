@@ -54,16 +54,7 @@ export const SellerDashboardSidebarOptions: DashboardSidebarMenuInterface[] = [
     icon: "box-list",
     link: "orders",
   },
-  {
-    label: "Inventory",
-    icon: "inventory",
-    link: "inventory",
-  },
-  {
-    label: "Coupons",
-    icon: "coupon",
-    link: "coupons",
-  },
+
   {
     label: "Shipping",
     icon: "shipping",

@@ -172,6 +172,7 @@ export const getUserShippingAddresses = async () => {
       },
       include: {
         willaya: true,
+        user: true,
       },
     });
 

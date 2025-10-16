@@ -1,0 +1,25 @@
+// Queries
+import DataTable from "@/components/ui/data-table";
+import { columns } from "./columns";
+import { Plus } from "lucide-react";
+import { getStoreOrders } from "@/queries/store";
+
+export default async function SellerOrdersPage({
+  params,
+}: {
+  params: { storeUrl: string };
+}) {
+  // Get all store coupons
+  const orders = await getStoreOrders(params.storeUrl);
+  console.log("orders: ", orders);
+  return (
+    <div>
+      <DataTable
+        filterValue="id"
+        data={orders}
+        columns={columns}
+        searchPlaceholder="Search order by id ..."
+      />
+    </div>
+  );
+}

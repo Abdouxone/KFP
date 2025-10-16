@@ -1,0 +1,119 @@
+"use client";
+
+// React, Next.js imports
+import Image from "next/image";
+
+// Tanstack React Table
+import { ColumnDef } from "@tanstack/react-table";
+
+// Types
+import { OrderStatus, PaymentStatus, StoreOrderType } from "@/lib/types";
+import OrderStatusSelect from "@/components/dashboard/forms/order-status-select";
+import { Expand } from "lucide-react";
+import { useModal } from "@/providers/modal-provider";
+import CustomModal from "@/components/dashboard/shared/custom-modal";
+import PaymentStatusTag from "@/components/shared/payement-status";
+import { formatPrice } from "@/components/shared/format-price";
+import StoreOrderSummary from "@/components/dashboard/shared/store-order-summary";
+// import StoreOrderSummary from "@/components/dashboard/shared/store-order-summary";
+
+export const columns: ColumnDef<StoreOrderType>[] = [
+  {
+    accessorKey: "id",
+    header: "Order",
+    cell: ({ row }) => {
+      return <span>{row.original.id}</span>;
+    },
+  },
+  {
+    accessorKey: "products",
+    header: "Products",
+    cell: ({ row }) => {
+      const images = row.original.items.map((product) => product.image);
+      return (
+        <div className="flex flex-wrap gap-1">
+          {images.map((img, i) => (
+            <Image
+              key={`${img}-${i}`}
+              src={img}
+              alt=""
+              width={100}
+              height={100}
+              className="w-7 h-7 object-cover rounded-full"
+              style={{ transform: `translateX(-${i * 15}px)` }}
+            />
+          ))}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "paymentStatus",
+    header: "Payment",
+    cell: ({ row }) => {
+      return (
+        <div>
+          <PaymentStatusTag
+            status={row.original.order.payementStatus as PaymentStatus}
+            isTable
+          />
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      return (
+        <div>
+          <OrderStatusSelect
+            groupId={row.original.id}
+            status={row.original.status as OrderStatus}
+            storeId={row.original.storeId}
+          />
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "total",
+    header: "Total",
+    cell: ({ row }) => {
+      return <span>{formatPrice(row.original.total)}</span>;
+    },
+  },
+  {
+    accessorKey: "open",
+    header: "",
+    cell: ({ row }) => {
+      return <ViewOrderButton group={row.original} />;
+    },
+  },
+];
+
+interface ViewOrderButtonProps {
+  group: StoreOrderType;
+}
+
+const ViewOrderButton: React.FC<ViewOrderButtonProps> = ({ group }) => {
+  const { setOpen } = useModal();
+
+  return (
+    <button
+      className="font-sans flex justify-center gap-2 items-center mx-auto text-lg text-gray-50 bg-[#0A0D2D] backdrop-blur-md lg:font-semibold relative z-10 px-4 py-2 overflow-hidden border-2 rounded-full group before:absolute before:w-full before:h-full before:top-0 before:-left-full before:rounded-full before:bg-blue-primary before:-z-10 before:transition-all before:duration-700 hover:before:left-0 hover:before:scale-150 cursor-pointer"
+      onClick={() => {
+        setOpen(
+          <CustomModal maxWidth="!max-w-3xl">
+            <StoreOrderSummary group={group} />
+          </CustomModal>
+        );
+      }}
+    >
+      View
+      <span className="w-7 h-7 rounded-full bg-white grid place-items-center">
+        <Expand className="w-5 stroke-black" />
+      </span>
+    </button>
+  );
+};

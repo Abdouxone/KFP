@@ -92,3 +92,79 @@ export const upsertstore = async (store: Partial<Store>) => {
     throw error;
   }
 };
+
+/*
+ * @name getStoreOrders
+ * @description - Retrieves all orders for a specific store.
+ *              - Returns order that include items, order details.
+ * @access User
+ * @param storeUrl - The url of the store whose order groups are being retrieved.
+ * @returns {Array} - Array of order groups, including items.
+ */
+
+export const getStoreOrders = async (storeUrl: string) => {
+  try {
+    // Retrieve current user
+    const user = await currentUser();
+
+    // Ensure user is authenticated
+    if (!user) throw new Error("Unauthenticated.");
+
+    // Verify the seller permission
+    if (user.privateMetadata.role !== "SELLER") {
+      throw new Error(
+        "Unauthorized Access: Seller Privileges Required for Entry!"
+      );
+    }
+
+    // Get store id using url
+    const store = await db.store.findUnique({
+      where: {
+        url: storeUrl,
+      },
+    });
+
+    // Ensure store is found
+    if (!store) throw new Error("Store not found.");
+
+    // Verify ownerShip
+    if (user.id !== store.userId) {
+      throw new Error(
+        "You dont't have permission to access this store's orders."
+      );
+    }
+
+    // Retrieve order groups foe the specified store and user
+    const orders = await db.orderGroup.findMany({
+      where: {
+        storeId: store.id,
+      },
+      include: {
+        items: true,
+        order: {
+          select: {
+            payementStatus: true,
+
+            shippingAddress: {
+              include: {
+                willaya: true,
+                user: {
+                  select: {
+                    email: true,
+                  },
+                },
+              },
+            },
+            payementDetails: true,
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+    return orders;
+  } catch (error) {
+    throw error;
+  }
+};

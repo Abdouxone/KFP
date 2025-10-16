@@ -19,6 +19,7 @@ import {
   retrieveProductDetails,
 } from "@/queries/product";
 import { getUserOrders } from "@/queries/profile";
+import { getStoreOrders } from "@/queries/store";
 import { getAllSubCategories } from "@/queries/Subcategory";
 import { Variable } from "lucide-react";
 import { StringValidation } from "zod/v3";
@@ -196,3 +197,5 @@ export type OrderTableDateFilter =
 export type UserOrderType = Prisma.PromiseReturnType<
   typeof getUserOrders
 >["orders"][0];
+
+export type StoreOrderType = Prisma.PromiseReturnType<typeof getStoreOrders>[0];
