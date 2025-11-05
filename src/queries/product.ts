@@ -412,7 +412,6 @@ export const getProducts = async (
       id: product.id,
       slug: product.slug,
       name: product.name,
-      rating: product.rating,
       variants,
       variantImages,
     };
