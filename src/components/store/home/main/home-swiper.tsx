@@ -3,10 +3,10 @@ import AwesomeSlider from "react-awesome-slider";
 import withAutoplay from "react-awesome-slider/dist/autoplay";
 import "react-awesome-slider/dist/styles.css";
 const AutoplaySlider = withAutoplay(AwesomeSlider);
-import Img1 from "../../../../../public/assets/images/swiper/1.webp";
-import Img2 from "../../../../../public/assets/images/swiper/2.webp";
-import Img3 from "../../../../../public/assets/images/swiper/3.webp";
-import Img4 from "../../../../../public/assets/images/swiper/4.webp";
+import Img1 from "../../../../../public/assets/images/swiper/first.jpg";
+import Img2 from "../../../../../public/assets/images/swiper/second.jpg";
+import Img3 from "../../../../../public/assets/images/swiper/third.jpg";
+import Img4 from "../../../../../public/assets/images/swiper/fourth.jpg";
 
 import Image from "next/image";
 export default function HomeMainSwiper() {

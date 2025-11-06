@@ -1,10 +1,14 @@
 import { useCartStore } from "@/cart-store/useCartStore";
+import ProductCardSimple from "@/components/store/cards/product/simple-card";
 import HomeMainSwiper from "@/components/store/home/main/home-swiper";
+import HomeUserCard from "@/components/store/home/main/user";
 import Sideline from "@/components/store/home/sideline/sideline";
 import CategoriesHeader from "@/components/store/layout/categories-header/categories-header";
 import Footer from "@/components/store/layout/footer/footer";
 import Header from "@/components/store/layout/header/header";
 import ProductList from "@/components/store/shared/product-list";
+import MainSwiper from "@/components/store/shared/swiper";
+import { SimpleProduct } from "@/lib/types";
 import { getHomeDataDynamic, getHomeFeaturedCategories } from "@/queries/home";
 import { getProducts } from "@/queries/product";
 import Link from "next/link";
@@ -15,7 +19,7 @@ export default async function HomePage() {
   const { products } = productsData;
 
   const { products_pvc } = await getHomeDataDynamic([
-    { property: "category", value: "pvc", type: "full" },
+    { property: "category", value: "pvc", type: "simple" },
   ]);
 
   const categories = await getHomeFeaturedCategories();
@@ -46,8 +50,12 @@ export default async function HomePage() {
                 <HomeMainSwiper />
                 {/* Featured card */}
                 <div className="h-[200px]"></div>
+                <ProductCardSimple product={products_pvc[0] as SimpleProduct} />
               </div>
               {/* Right */}
+              <div className="h-full">
+                <HomeUserCard products={products_pvc} />
+              </div>
             </div>
           </div>
         </div>
